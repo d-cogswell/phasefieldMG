@@ -94,14 +94,27 @@ double grid3D::operator()(double i, double k, double j){
   int i0=(int)i;
   int j0=(int)j;
   int k0=(int)k;
+
+  //If the doubles are equal to integers, return the position
+  if (i0==i && j0==j && k0==k)
+    return((*this)(i0,j0,k0));
+
+  //If we're at the edge of the grid, move 1 gridpoint away from the edge
+  if (i0+1==N1+boundary)
+    i0-=1;
+  if (j0+1==N2+boundary)
+    j0-=1;
+  if (k0+1==N3+boundary)
+    k0-=1;
+
   double v1_k0=(*this)(i0,j0,k0)
                +((*this)(i0+1,j0,k0)-(*this)(i0,j0,k0))*(i-i0);
   double v2_k0=(*this)(i0,j0+1,k0)
                +((*this)(i0+1,j0+1,k0)-(*this)(i0,j0+1,k0))*(i-i0);
 
-  double v1_k1=(*this)(i0+1,j0,k0+1)
+  double v1_k1=(*this)(i0,j0,k0+1)
                +((*this)(i0+1,j0,k0+1)-(*this)(i0,j0,k0+1))*(i-i0);
-  double v2_k1=(*this)(i0+1,j0+1,k0+1)
+  double v2_k1=(*this)(i0,j0+1,k0+1)
                +((*this)(i0+1,j0+1,k0+1)-(*this)(i0,j0+1,k0+1))*(i-i0);
 
   double v_k0=v1_k0+(v2_k0-v1_k0)*(j-j0);
