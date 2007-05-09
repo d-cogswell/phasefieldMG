@@ -241,3 +241,140 @@ int binary_alloy3D(component A, component B, double T, grid3D* phi, grid3D* c, d
   }
   return(0);
 }
+//-----------------------------------------------------------------------------
+int multigrid(grid3D* u, double h, int iterations, int outputEvery){
+  int N=25;
+  double dt=.5*h*h/2;
+
+  grid3D f(N,N,1,0);
+  grid3D u_smth(N,N,1,0);
+  grid3D u_CGC(N,N,1,0);
+  grid3D *v;
+
+  //Set number of iterations on the fine grid and coarse grid
+  int v1=2;
+  int v2=0;
+
+  grid3D r(N,N,1,0);
+  grid3D e(N,N,1,0);
+
+  for (int n=0; n<iterations; n++){
+
+    //Write output, if necessary
+    char outFile[128];
+    if (!(n%outputEvery)){
+      sprintf(outFile,"output/p%6.6i.phi",n);
+      cout << "writing output: " << outFile << endl;
+      u->writeToFile(outFile);
+    }
+
+    //Compute f
+    for (int i=1; i<u->getDimension(1)-1; ++i)
+      for (int j=1; j<u->getDimension(2)-1; ++j)
+        f(i,j,0)=(*u)(i,j,0)+dt/sq(h)*((*u)(i+1,j,0)+(*u)(i-1,j,0)+(*u)(i,j+1,0)+(*u)(i,j-1,0)-4*(*u)(i,j,0));
+
+    //Smooth v1 on the fine mesh
+    for (int n1=0; n1<v1;++n1){
+      GS_LEX(&u_smth,u,&f,h);
+    }
+
+    //Calculate the residual
+    for (int i=1; i<u->getDimension(1)-1; ++i)
+      for (int j=1; j<u->getDimension(2)-1; ++j)
+        r(i,j,0)=f(i,j,0)-u_smth(i,j,0);
+
+    //Control grid refinement levels here (2=two grid)
+    int levels=4;
+    v=multigrid_CGC(&e,&r,h,levels);
+
+    //Add the relaxed error back to u
+    gridLoop3D(*u){
+      //u_CGC(i,j,k)=u_smth(i,j,k)+(*v)(i,j,k);
+      (*u)(i,j,k)=u_smth(i,j,k)+(*v)(i,j,k);
+      //(*u)(i,j,k)=u_CGC(i,j,k);
+    }
+
+    //Smooth v2 on the fine mesh
+    for (int n2=0; n2<v2;++n2){
+      GS_LEX(u,u,&f,h);
+    }
+  }
+  return(0);
+}
+
+//-----------------------------------------------------------------------------
+//This is a recursive function that relaxes the error using 'max_level' grid
+//levels.   max_levels=2 corresponds to the two grid scheme.
+grid3D* multigrid_CGC(grid3D* e, grid3D* r, double h, int max_level, int level){
+  if (level<=max_level){
+
+    //Create the restricted grids
+    int Nx=r->getDimension(1);
+    int Ny=r->getDimension(2);
+    int N2x=(Nx+1)/2;
+    int N2y=(Ny+1)/2;
+    grid3D *e2h = new grid3D(N2x,N2y,0);
+    //grid3D* e2h=e->restrict();
+
+    //For debugging
+    //cout << "Level " << level << ":(" << Nx << "," << Ny << ")" << endl;
+
+    //Restrict the residual to a coarse mesh
+    grid3D* r2h=r->restrict();
+
+    //Solve on the coarse mesh
+    L_heat_eqn(e2h,r2h,2*h);
+
+    //Recursively call multigrid for higher levels, and add up relaxed error
+    grid3D* e4h=multigrid_CGC(e2h,r2h,2*h,max_level,level+1);
+    if (e4h){
+      gridLoop3D(*e2h){
+	(*e2h)(i,j,k)+=(*e4h)(i,j,k);
+      }
+    }
+
+    //Prolongate the error to the fine mesh and return it
+    return(e2h->prolongate(Nx,Ny));
+  }
+  return(0);
+}
+//-----------------------------------------------------------------------------
+inline void GS_LEX(grid3D* u_smooth, grid3D* u, grid3D* f, double h){
+  for (int i=1; i<u->getDimension(1)-1; ++i)
+    for (int j=1; j<u->getDimension(2)-1; ++j)
+      (*u_smooth)(i,j,0)=.25*(sq(h)*(*f)(i,j,0)+(*u)(i+1,j,0)+(*u_smooth)(i-1,j,0)+(*u)(i,j+1,0)+(*u_smooth)(i,j-1,0));
+}
+//-----------------------------------------------------------------------------
+inline void L_heat_eqn(grid3D* u, grid3D* f, double h){
+  for (int i=1; i<u->getDimension(1)-1; ++i)
+    for (int j=1; j<u->getDimension(2)-1; ++j)
+      (*u)(i,j,0)=(*f)(i,j,0);
+}
+//-----------------------------------------------------------------------------
+void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){
+  int N1=L->getDimension(1);
+  int N2=L->getDimension(2);
+
+  //Forward elimination
+  for (int col=0; col<N2; ++col){
+    for (int row=col+1; row<N1; ++row){
+      double factor=-(*L)(row,col,0)/(*L)(col,col,0);
+      for (int j=col; j<N2; ++j){
+        (*L)(row,j,0)+=factor*(*L)(col,j,0);
+      }
+      (*f)(row,0,0)+=factor*(*f)(col,0,0);
+    }
+  }
+
+  //Backward elimination
+  for (int col=N2-1; col>=0; --col){
+    (*f)(col,0,0)/=(*L)(col,col,0);
+    for (int row=col-1; row>=0; --row){
+      (*f)(row,0,0)-=(*L)(row,col,0)*(*f)(col,0,0);
+    }
+  }
+
+  for (int i=0; i<N1; ++i){
+    (*u)(i,0,0)=(*f)(i,0,0);
+  }
+}

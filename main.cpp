@@ -1,66 +1,109 @@
 #include <iostream>
 #include <unistd.h>
 #include "grid3D.h"
-#include "convexification.h"
-#include "phasefield3Dmpi.h"
-//#include "phasefield3D.h"
+#include "phasefield3D.h"
 using namespace std;
 
-//Calibrated for 10 boundary pts
-double factor=.26;
-double expnt = 1.0;
+//-----------------------------------------------------------------------------
+//This function creates the initial block configuration for problem #2
+//B should be a array of 4 integers that represent the source blocks
+grid3D* createGrid(grid3D* grid, int* B, int N){
+
+  int blockResolution=4;
+  int blockWidth=(N-1)/6+1;
+
+  //Set gridpoints corresponding to each block
+  (*grid)=0;
+  for (int b=0; b<4; ++b){
+    int x=1+(B[b]-1)/blockResolution;
+    int y=B[b]-(x-1)*blockResolution;
+
+    for (int i=0; i<blockWidth; ++i)
+      for (int j=0; j<blockWidth; ++j)
+        (*grid)((blockWidth-1)*x+i,(blockWidth-1)*y+j,0)=1;
+  }
+}
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
-  double lambda=0;
-  double theta=0;
-  //double h=.5;
-  double h=.25;
-  int iterations=200000;
-  int outputEvery=1000;
+  double h=1;
+  int iterations=10;
+  int outputEvery=1;
 
   char* filename;
-  grid3D* initialCond;
+  grid3D* initial_condition;
+  grid3D* initial_condition2;
   int option_char;
 
   // Handle command line options
   bool inputFileSupplied=false;
-
-  while ((option_char = getopt(argc, argv, "f:e:w:i:a:")) != -1)
+  while ((option_char = getopt(argc, argv, "i:")) != -1)
     switch (option_char){
-    case 'f':
-      factor=atof(optarg);
-      break;
-    case 'e':
-      expnt=atof(optarg);
-      break;
     case 'i':
       inputFileSupplied=true;
       filename=optarg;
-      //initialCond = new grid3D(filename,bc,1,0,80+50,0,0,40+50,0);
-      initialCond = new grid3D(filename);
-      break;
-    case 'w':
-      lambda=atof(optarg);
-      break;
-    case 'a':
-      theta=atof(optarg);
+      initial_condition = new grid3D(filename);
       break;
     }
 
   if (!inputFileSupplied){
     cout << "No input file supplied!" << endl;
-    initialCond = new grid3D(100,100,100);
-    //initialCond->initializeSphere(25);
-    //initialCond = new grid3D(80,80,80);
-    initialCond->initializeSphere(20);
+    initial_condition = new grid3D(25,25,1);
+    initial_condition2 = new grid3D(25,25,1);
   }
 
-    //phasefield3D(initialCond,h,iterations,outputEvery);
-    phasefield3DMPI(argc,argv,initialCond,h,iterations,outputEvery);
+  //Cahn-hilliard and allen-cahn solvers
+  //initial_condition->initializeRandom(0,1);
+  int blocks [4] = {1,7,14,16};
+  h=1./26;
+  int Nx=25;
+  int Ny=25;
+  double dt=.5*h*h/2;
+  createGrid(initial_condition,&blocks[0],25);
 
-  //Solve Maxwell's equations
-  //maxwell3D(argc,argv,initialCond,lambda,theta,h,iterations,outputEvery);
-  //maxwell3D(initialCond,lambda,theta,h,iterations,outputEvery);
+  //Construct u
+  grid3D u(Nx*Ny,1,1,0);
+  gridLoop3D(*initial_condition){
+    u(j*Nx+i,0,0)=(*initial_condition)(i,j,k);
+  }
+
+  //Construct L
+  grid3D L(Nx*Ny,Nx*Ny,1);
+  for (int r=0; r<Nx*Ny; ++r){
+    //L(r,r,0)+=4+2*sq(h)/dt;
+    L(r,r,0)+=4+sq(h)/dt;
+    L(r+1,r,0)+=-1;
+    L(r-1,r,0)+=-1;
+    L(r,r+1,0)+=-1;
+    L(r,r-1,0)+=-1;
+  }
+
+  //Construct f
+  grid3D f(Nx*Ny,1,1);
+  for (int i=0; i<Nx; ++i)
+    for (int j=0; j<Ny; ++j)
+      f(j*Nx+i,0,0)=sq(h)/dt*(*initial_condition)(i,j,0);
+/*
+      f(j*Nx+i,0,0)=
+         (*initial_condition)(i+1,j,0)
+        +(*initial_condition)(i-1,j,0)
+        +(*initial_condition)(i,j+1,0)
+        +(*initial_condition)(i,j-1,0)
+        +(2*sq(h)/dt-4)*(*initial_condition)(i,j,0);
+*/
+  gaussian_elimination(&L,&u,&f);
+
+  //Convert u back to 2D grid
+  gridLoop3D(*initial_condition){
+    (*initial_condition)(i,j,k)=u(j*Nx+i,0,0);
+  }
+
+  initial_condition->writeToFile("output/out.phi");
+
+/*
+  multigrid(initial_condition,h,iterations,outputEvery);
+  //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
+  //allen_cahn3D(initial_phi,h,iterations,outputEvery);
+*/
   return 0;
 }

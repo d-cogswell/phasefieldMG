@@ -48,6 +48,8 @@ class grid3D{
   void zAxisNeumannBoundary(double,int=0,int=0);
   void neumannBoundary(void);
   void dirichletBoundary(void);
+  grid3D* prolongate(int,int);
+  grid3D* restrict();
   void writeToFile(char*);
   void writeToFile(char*,int);
   void writeToFileDx(char*);
@@ -59,6 +61,7 @@ class grid3D{
   inline double operator()(double,double,double);
   void operator=(const double);
   void operator=(grid3D);
+  grid3D *coarse, *fine;
 
  protected:
   void allocate(int,int,int,int);
@@ -90,7 +93,7 @@ double& grid3D::operator()(int i, int j, int k){
 }
 
 //This function does trilinear interpolation
-double grid3D::operator()(double i, double k, double j){
+double grid3D::operator()(double i, double j, double k){
   int i0=(int)i;
   int j0=(int)j;
   int k0=(int)k;

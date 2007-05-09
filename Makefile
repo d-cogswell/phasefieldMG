@@ -1,22 +1,27 @@
 TARGET = mse3D 
-SOURCE = main.cpp convexification.cpp
+SOURCE = main.cpp phasefield3D.cpp
 SOURCEMPI = main.cpp convexificationMPI.cpp
 #CC = icc
 CC = g++ 
 CCMPI = mpic++
-CLIBS = -L. -lgrid3D -lgrid3DMPI
+CLIBS = -L. -lgrid3D -lpthread -lX11
+CLIBSMPI = -L. -lgrid3DMPI
 #CFLAGS = -static -O3 -ipo -xN
-CFLAGS = -O3 #-g
+CFLAGS = -O3
 CFLAGSMPI = -O3 #-Wno-long-double
 
 $(TARGET): $(SOURCE)
-	make grid3D
+	#make grid3D
 	$(CC) $(CFLAGS) $(SOURCE) $(CLIBS) -o $(TARGET)
+
+debug: $(SOURCE)
+	make grid3D
+	$(CC) $(CFLAGS) -g $(SOURCE) $(CLIBS) -o $(TARGET)
 
 MPI: $(SOURCEMPI) 
 	make grid3D
 	make grid3DMPI
-	$(CCMPI) $(CFLAGSMPI) $(SOURCEMPI) $(CLIBS) -o $(TARGET)
+	$(CCMPI) $(CFLAGSMPI) $(SOURCEMPI) $(CLIBSMPI) -o $(TARGET)
 
 grid3D:
 	$(CC) -c $(CFLAGS) grid3D.cpp

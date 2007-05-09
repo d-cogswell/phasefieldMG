@@ -30,6 +30,8 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal){
   N2=n2;
   N3=n3;
   boundary=bound;
+  coarse=NULL;
+  fine=NULL;
 
   //Allocate space for the grid
   allocate(N1,N2,N3,boundary);
@@ -46,6 +48,9 @@ grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc,
   N1+=n1_inc;
   N2+=n2_inc;
   N3+=n3_inc;
+
+  coarse=NULL;
+  fine=NULL;
 
   allocate(N1,N2,N3,boundary);
   (*this)=initialVal;
@@ -72,6 +77,8 @@ grid3D::grid3D(const grid3D& grid){
   N2_orig=grid.N2_orig;
   N3_orig=grid.N3_orig;
   boundary=grid.boundary;
+  *coarse=*grid.coarse;
+  *fine=*grid.fine;
 
   //Allocate space for the grid
   allocate(N1,N2,N3,boundary);
@@ -90,6 +97,14 @@ grid3D::~grid3D(void){
   }
   }
   delete [] grid;
+
+  //Delete coarse and fine grids if they've been allocated
+  if (coarse!=NULL){
+    delete coarse;
+  }
+  if (fine!=NULL){
+    delete fine;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -279,6 +294,39 @@ void grid3D::dirichletBoundary(void){
     (*this)(N1,j)=0;
   }
   */
+}
+//-----------------------------------------------------------------------------
+//Function to perform prolongation by interpolation
+//Dimensions for the fine matrix must be provided - they can't be determined
+//from the size of the coarse matrix
+grid3D* grid3D::prolongate(int Nx, int Ny){
+  if (fine==NULL){
+    fine=new grid3D(Nx,Ny,1,0);
+  }
+
+  for (int i=0; i<N1-1; ++i)
+    for (int j=0; j<N2-1; ++j){
+      (*fine)(2*i,2*j,0)=(*this)(i,j,0);
+      (*fine)(2*i+1,2*j,0)=(*this)(i+.5,(double)j,0.);
+      (*fine)(2*i,2*j+1,0)=(*this)((double)i,j+.5,0.);
+      (*fine)(2*i+1,2*j+1,0)=(*this)(i+.5,j+.5,0.);
+    }
+  return(fine);
+}
+//-----------------------------------------------------------------------------
+//Function to perform restriction by injection
+grid3D* grid3D::restrict(){
+  if (coarse==NULL){
+    int N2x=(N1+1)/2;
+    int N2y=(N2+1)/2;
+
+    coarse=new grid3D(N2x,N2y,1,0);
+  }
+
+  gridLoop3D(*coarse){
+    (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
+  }
+  return(coarse);
 }
 //-----------------------------------------------------------------------------
 void grid3D::writeToFile(char* file){
