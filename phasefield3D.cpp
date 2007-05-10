@@ -242,139 +242,152 @@ int binary_alloy3D(component A, component B, double T, grid3D* phi, grid3D* c, d
   return(0);
 }
 //-----------------------------------------------------------------------------
-int multigrid(grid3D* u, double h, int iterations, int outputEvery){
-  int N=25;
-  double dt=.5*h*h/2;
-
-  grid3D f(N,N,1,0);
-  grid3D u_smth(N,N,1,0);
-  grid3D u_CGC(N,N,1,0);
-  grid3D *v;
-
-  //Set number of iterations on the fine grid and coarse grid
-  int v1=2;
-  int v2=0;
-
-  grid3D r(N,N,1,0);
-  grid3D e(N,N,1,0);
-
-  for (int n=0; n<iterations; n++){
-
-    //Write output, if necessary
-    char outFile[128];
-    if (!(n%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.phi",n);
-      cout << "writing output: " << outFile << endl;
-      u->writeToFile(outFile);
-    }
-
-    //Compute f
-    for (int i=1; i<u->getDimension(1)-1; ++i)
-      for (int j=1; j<u->getDimension(2)-1; ++j)
-        f(i,j,0)=(*u)(i,j,0)+dt/sq(h)*((*u)(i+1,j,0)+(*u)(i-1,j,0)+(*u)(i,j+1,0)+(*u)(i,j-1,0)-4*(*u)(i,j,0));
-
-    //Smooth v1 on the fine mesh
-    for (int n1=0; n1<v1;++n1){
-      GS_LEX(&u_smth,u,&f,h);
-    }
-
-    //Calculate the residual
-    for (int i=1; i<u->getDimension(1)-1; ++i)
-      for (int j=1; j<u->getDimension(2)-1; ++j)
-        r(i,j,0)=f(i,j,0)-u_smth(i,j,0);
-
-    //Control grid refinement levels here (2=two grid)
-    int levels=4;
-    v=multigrid_CGC(&e,&r,h,levels);
-
-    //Add the relaxed error back to u
-    gridLoop3D(*u){
-      //u_CGC(i,j,k)=u_smth(i,j,k)+(*v)(i,j,k);
-      (*u)(i,j,k)=u_smth(i,j,k)+(*v)(i,j,k);
-      //(*u)(i,j,k)=u_CGC(i,j,k);
-    }
-
-    //Smooth v2 on the fine mesh
-    for (int n2=0; n2<v2;++n2){
-      GS_LEX(u,u,&f,h);
-    }
-  }
-  return(0);
-}
-
-//-----------------------------------------------------------------------------
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
-grid3D* multigrid_CGC(grid3D* e, grid3D* r, double h, int max_level, int level){
+grid3D* multigrid(grid3D* u, double h, int max_level, int level){
   if (level<=max_level){
 
+    //Set number of iterations on the fine grid and coarse grid
+    int v1=1;
+    int v2=0;
+
     //Create the restricted grids
-    int Nx=r->getDimension(1);
-    int Ny=r->getDimension(2);
-    int N2x=(Nx+1)/2;
-    int N2y=(Ny+1)/2;
-    grid3D *e2h = new grid3D(N2x,N2y,0);
-    //grid3D* e2h=e->restrict();
+    int Nx=u->getDimension(1);
+    int Ny=u->getDimension(2);
+    grid3D d(Nx,Ny,1);
+    grid3D e(Nx,Ny,1);
+
+    //Parameters
+    double dt=.001;
+
+    //Construct L
+    cout << "constructing L..." << flush;
+    grid3D L(Nx*Ny,Nx*Ny,1);
+    L_heat_eqn(&L,Nx,Ny,h,dt);
+
+    //Construct f
+    cout << "done" << endl << "constructing f..." << flush;
+    grid3D f(Nx,Ny,1);
+    for (int i=0; i<Nx; ++i)
+      for (int j=0; j<Ny; ++j)
+        f(i,j,0)=sq(h)/dt*(*u)(i,j,0);
+
+    //Presmoothing
+    cout << "done" << endl << "presmoothing..." << flush;
+    u->periodicBoundary();
+    for (int i=0;i<v1;++i){
+      GS_LEX(u,&f,h);
+    }
+
+    //Calculate the defect
+    cout << "done" << endl << "computing L*u_smth..." << flush;
+    grid3D f_smth(Nx,Ny,1);
+    for (int i=0; i<Nx; ++i)
+      for (int j=0; j<Ny; ++j){
+        int row=j*Nx+i;
+        for (int k=0; k<Nx; ++k)
+          for (int l=0; l<Ny; ++l){
+            int col=k*Nx+l;
+            f_smth(i,j,0)+=L(row,col,0)*(*u)(k,l,0);
+          }
+      }
+
+    cout << "done" << endl << "calculating the defect..." << flush;
+    for (int i=1; i<u->getDimension(1)-1; ++i)
+      for (int j=1; j<u->getDimension(2)-1; ++j)
+        d(i,j,0)=f(i,j,0)-f_smth(i,j,0);
 
     //For debugging
     //cout << "Level " << level << ":(" << Nx << "," << Ny << ")" << endl;
 
-    //Restrict the residual to a coarse mesh
-    grid3D* r2h=r->restrict();
+    //Restrict the defect to a coarse mesh
+    cout << "done" << endl << "restricting the defect..." << flush;
+    grid3D* d2h=d.restrict();
 
     //Solve on the coarse mesh
-    L_heat_eqn(e2h,r2h,2*h);
+    cout << "done" << endl << "solve on coarse mesh..." << flush;
+    int Nx2h=d2h->getDimension(1);
+    int Ny2h=d2h->getDimension(2);
+    grid3D L2h(Nx2h*Ny2h,Nx2h*Ny2h,1);
+    L_heat_eqn(&L2h,Nx2h,Ny2h,2*h,dt);
+    grid3D* e2h=e.restrict();
+    gaussian_elimination(&L2h,e2h,d2h);
+    //gaussian_elimination(&L,u,&f);
 
-    //Recursively call multigrid for higher levels, and add up relaxed error
-    grid3D* e4h=multigrid_CGC(e2h,r2h,2*h,max_level,level+1);
-    if (e4h){
-      gridLoop3D(*e2h){
-	(*e2h)(i,j,k)+=(*e4h)(i,j,k);
-      }
+    //Prolongate the error to the fine mesh
+    cout << "done" << endl << "prolongate..." << flush;
+    grid3D *fine = e2h->prolongate(Nx,Ny);
+
+    //Compute the corrected approximation
+    gridLoop3D(*u){
+      (*u)(i,j,k)+=(*fine)(i,j,k);
     }
 
-    //Prolongate the error to the fine mesh and return it
-    return(e2h->prolongate(Nx,Ny));
+    //Postsmoothing
+    cout << "done" << endl << "postsmoothing..." << flush;
+    u->periodicBoundary();
+    for (int i=0;i<v2;++i){
+      GS_LEX(u,&f,h);
+    }
+
+    cout << "done" << endl << flush;
+    return(u);
   }
   return(0);
 }
 //-----------------------------------------------------------------------------
-inline void GS_LEX(grid3D* u_smooth, grid3D* u, grid3D* f, double h){
-  for (int i=1; i<u->getDimension(1)-1; ++i)
-    for (int j=1; j<u->getDimension(2)-1; ++j)
-      (*u_smooth)(i,j,0)=.25*(sq(h)*(*f)(i,j,0)+(*u)(i+1,j,0)+(*u_smooth)(i-1,j,0)+(*u)(i,j+1,0)+(*u_smooth)(i,j-1,0));
+inline void GS_LEX(grid3D* u, grid3D* f, double h){
+  gridLoop3D(*u){
+    (*u)(i,j,0)=.25*(sq(h)*(*f)(i,j,0)+(*u)(i+1,j,0)+(*u)(i-1,j,0)+(*u)(i,j+1,0)+(*u)(i,j-1,0));
+  }
 }
 //-----------------------------------------------------------------------------
-inline void L_heat_eqn(grid3D* u, grid3D* f, double h){
-  for (int i=1; i<u->getDimension(1)-1; ++i)
-    for (int j=1; j<u->getDimension(2)-1; ++j)
-      (*u)(i,j,0)=(*f)(i,j,0);
+void L_heat_eqn(grid3D* L, int Nx, int Ny, double h, double dt){
+  for (int i=0; i<Nx; ++i)
+    for (int j=0; j<Ny; ++j){
+      int row=j*Nx+i;
+      (*L)(row,row,0)+=4+sq(h)/dt;
+      (*L)(row,j*Nx+(i+1)%Nx,0)+=-1;
+      (*L)(row,j*Nx+(i+Nx-1)%Nx,0)+=-1;
+      (*L)(row,((j+1)%Ny)*Nx+i,0)+=-1;
+      (*L)(row,((j+Ny-1)%Ny)*Nx+i,0)+=-1;
+    }
 }
 //-----------------------------------------------------------------------------
 void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){
   int N1=L->getDimension(1);
   int N2=L->getDimension(2);
+  int Nx=u->getDimension(1);
+
+  //Convert f to a column vector
+  grid3D *f_col = new grid3D(N2,1,1);
+  gridLoop3D(*f){
+    (*f_col)(j*Nx+i,0,0)=(*f)(i,j,0);
+  }
 
   //Forward elimination
   for (int col=0; col<N2; ++col){
     for (int row=col+1; row<N1; ++row){
       double factor=-(*L)(row,col,0)/(*L)(col,col,0);
-      for (int j=col; j<N2; ++j){
-        (*L)(row,j,0)+=factor*(*L)(col,j,0);
+      if (factor!=0){
+        for (int j=col; j<N2; ++j){
+          (*L)(row,j,0)+=factor*(*L)(col,j,0);
+        }
+        (*f_col)(row,0,0)+=factor*(*f_col)(col,0,0);
       }
-      (*f)(row,0,0)+=factor*(*f)(col,0,0);
     }
   }
 
   //Backward elimination
   for (int col=N2-1; col>=0; --col){
-    (*f)(col,0,0)/=(*L)(col,col,0);
+    (*f_col)(col,0,0)/=(*L)(col,col,0);
     for (int row=col-1; row>=0; --row){
-      (*f)(row,0,0)-=(*L)(row,col,0)*(*f)(col,0,0);
+      (*f_col)(row,0,0)-=(*L)(row,col,0)*(*f_col)(col,0,0);
     }
   }
 
-  for (int i=0; i<N1; ++i){
-    (*u)(i,0,0)=(*f)(i,0,0);
+  //copy f to u
+  gridLoop3D(*u){
+    (*u)(i,j,0)=(*f_col)(j*Nx+i,0,0);
   }
 }
