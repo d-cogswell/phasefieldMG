@@ -32,7 +32,6 @@ int main(int argc, char **argv){
 
   char* filename;
   grid3D* initial_condition;
-  grid3D* initial_condition2;
   int option_char;
 
   // Handle command line options
@@ -49,17 +48,17 @@ int main(int argc, char **argv){
   if (!inputFileSupplied){
     cout << "No input file supplied!" << endl;
     initial_condition = new grid3D(25,25,1);
-    initial_condition2 = new grid3D(25,25,1);
   }
 
   //Cahn-hilliard and allen-cahn solvers
-  //initial_condition->initializeRandom(0,1);
   int blocks [4] = {1,7,14,16};
+  createGrid(initial_condition,&blocks[0],25);
+  initial_condition->initializeRandom(0,1);
   h=1./26;
   int Nx=25;
   int Ny=25;
   double dt=.5*h*h/2;
-  createGrid(initial_condition,&blocks[0],25);
+  dt=.01;
 
   //Construct u
   grid3D u(Nx*Ny,1,1,0);
@@ -68,36 +67,29 @@ int main(int argc, char **argv){
   }
 
   //Construct L
-  grid3D L(Nx*Ny,Nx*Ny,1);
-  for (int r=0; r<Nx*Ny; ++r){
-    //L(r,r,0)+=4+2*sq(h)/dt;
-    L(r,r,0)+=4+sq(h)/dt;
-    L(r+1,r,0)+=-1;
-    L(r-1,r,0)+=-1;
-    L(r,r+1,0)+=-1;
-    L(r,r-1,0)+=-1;
+  grid3D L(Nx*Ny,Nx*Ny,0);
+  for (int i=0; i<Nx; ++i)
+    for (int j=0; j<Ny; ++j){
+      int row=j*Nx+i;
+      L(row,row,0)+=4+sq(h)/dt;
+      L(row,j*Nx+(i+1)%Nx,0)+=-1;
+      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-1;
+      L(row,((j+1)%Ny)*Nx+i,0)+=-1;
+      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-1;
   }
 
   //Construct f
-  grid3D f(Nx*Ny,1,1);
+  grid3D f(Nx*Ny,1,0);
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j)
       f(j*Nx+i,0,0)=sq(h)/dt*(*initial_condition)(i,j,0);
-/*
-      f(j*Nx+i,0,0)=
-         (*initial_condition)(i+1,j,0)
-        +(*initial_condition)(i-1,j,0)
-        +(*initial_condition)(i,j+1,0)
-        +(*initial_condition)(i,j-1,0)
-        +(2*sq(h)/dt-4)*(*initial_condition)(i,j,0);
-*/
+
   gaussian_elimination(&L,&u,&f);
 
   //Convert u back to 2D grid
   gridLoop3D(*initial_condition){
     (*initial_condition)(i,j,k)=u(j*Nx+i,0,0);
   }
-
   initial_condition->writeToFile("output/out.phi");
 
 /*
