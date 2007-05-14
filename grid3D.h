@@ -84,6 +84,7 @@ class grid3D{
   int N3_orig;
   int warned_range;
   int warned_bndry;
+  int deleted; //Used to mark deleted grids in the linked list of coarse and fine grids
 };
 
 //-----------------------------------------------------------------------------

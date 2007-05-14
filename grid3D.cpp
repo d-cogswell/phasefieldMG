@@ -25,6 +25,7 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal){
   N3_orig=0;
   warned_range=0;
   warned_bndry=0;
+  deleted=0;
 
   N1=n1;
   N2=n2;
@@ -51,6 +52,7 @@ grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc,
 
   coarse=NULL;
   fine=NULL;
+  deleted=0;
 
   allocate(N1,N2,N3,boundary);
   (*this)=initialVal;
@@ -79,12 +81,16 @@ grid3D::grid3D(const grid3D& grid){
   boundary=grid.boundary;
   *coarse=*grid.coarse;
   *fine=*grid.fine;
+  deleted=0;
 
   //Allocate space for the grid
   allocate(N1,N2,N3,boundary);
 }
 //-----------------------------------------------------------------------------
 grid3D::~grid3D(void){
+
+  deleted=1;
+
   int n1=N1+2*boundary;
   int n2=N2+2*boundary;
   int n3=N3+2*boundary;
@@ -100,10 +106,12 @@ grid3D::~grid3D(void){
 
   //Delete coarse and fine grids if they've been allocated
   if (coarse!=NULL){
-    delete coarse;
+    if (!coarse->deleted)
+      delete coarse;
   }
   if (fine!=NULL){
-    delete fine;
+    if (!fine->deleted)
+      delete fine;
   }
 }
 
@@ -302,6 +310,7 @@ void grid3D::dirichletBoundary(void){
 grid3D* grid3D::prolongate(int Nx, int Ny){
   if (fine==NULL){
     fine=new grid3D(Nx,Ny,1,0);
+    fine->coarse=this;
   }
 
   for (int i=0; i<N1-1; ++i)
@@ -321,6 +330,7 @@ grid3D* grid3D::restrict(){
     int N2y=(N2+1)/2;
 
     coarse=new grid3D(N2x,N2y,1,0);
+    coarse->fine=this;
   }
 
   gridLoop3D(*coarse){
