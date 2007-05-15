@@ -244,8 +244,7 @@ int binary_alloy3D(component A, component B, double T, grid3D* phi, grid3D* c, d
 //-----------------------------------------------------------------------------
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
-grid3D* multigrid(grid3D* u, double h, int max_level, int level){
-  if (level<=max_level){
+grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
 
     //Set number of iterations on the fine grid and coarse grid
     int v1=1;
@@ -258,82 +257,64 @@ grid3D* multigrid(grid3D* u, double h, int max_level, int level){
     grid3D e(Nx,Ny,1);
 
     //Parameters
-    double dt=.001;
+    double dt=.0001;
 
     //Construct L
-    cout << "constructing L..." << flush;
     grid3D L(Nx*Ny,Nx*Ny,1);
     L_heat_eqn(&L,Nx,Ny,h,dt);
 
-    //Construct f
-    cout << "done" << endl << "constructing f..." << flush;
-    grid3D f(Nx,Ny,1);
-    for (int i=0; i<Nx; ++i)
-      for (int j=0; j<Ny; ++j)
-        f(i,j,0)=sq(h)/dt*(*u)(i,j,0);
-
     //Presmoothing
-    cout << "done" << endl << "presmoothing..." << flush;
     u->periodicBoundary();
     for (int i=0;i<v1;++i){
-      GS_LEX(u,&f,h);
+      GS_LEX(u,f,h);
     }
 
-    //Calculate the defect
-    cout << "done" << endl << "computing L*u_smth..." << flush;
     grid3D f_smth(Nx,Ny,1);
+
+    //Calculate the defect
     for (int i=0; i<Nx; ++i)
       for (int j=0; j<Ny; ++j){
         int row=j*Nx+i;
-        for (int k=0; k<Nx; ++k)
-          for (int l=0; l<Ny; ++l){
-            int col=k*Nx+l;
-            f_smth(i,j,0)+=L(row,col,0)*(*u)(k,l,0);
-          }
+	for (int k=0; k<Nx; ++k)
+	  for (int l=0; l<Ny; ++l){
+            int col=l*Nx+k;
+	    f_smth(i,j,0)+=L(row,col,0)*(*u)(k,l,0);
+	  }
       }
 
-    cout << "done" << endl << "calculating the defect..." << flush;
-    for (int i=1; i<u->getDimension(1)-1; ++i)
-      for (int j=1; j<u->getDimension(2)-1; ++j)
-        d(i,j,0)=f(i,j,0)-f_smth(i,j,0);
-
-    //For debugging
-    //cout << "Level " << level << ":(" << Nx << "," << Ny << ")" << endl;
+    gridLoop3D(d)
+      d(i,j,k)=(*f)(i,j,k)-f_smth(i,j,k);
 
     //Restrict the defect to a coarse mesh
-    cout << "done" << endl << "restricting the defect..." << flush;
     grid3D* d2h=d.restrict();
+    //grid3D* e2h=e.restrict();
 
     //Solve on the coarse mesh
-    cout << "done" << endl << "solve on coarse mesh..." << flush;
     int Nx2h=d2h->getDimension(1);
     int Ny2h=d2h->getDimension(2);
     grid3D L2h(Nx2h*Ny2h,Nx2h*Ny2h,1);
     L_heat_eqn(&L2h,Nx2h,Ny2h,2*h,dt);
-    grid3D* e2h=e.restrict();
-    gaussian_elimination(&L2h,e2h,d2h);
-    //gaussian_elimination(&L,u,&f);
+    //gaussian_elimination(&L2h,e2h,d2h);
+    gaussian_elimination(&L,&e,&d);
+    //e.writeToFile("output/e.phi");
+    //grid3D* e2h=e.restrict();
 
     //Prolongate the error to the fine mesh
-    cout << "done" << endl << "prolongate..." << flush;
-    grid3D *fine = e2h->prolongate(Nx,Ny);
+    //e2h->writeToFile("output/e-restrict.phi");
+    //e2h->prolongate(Nx,Ny);
+    //e.writeToFile("output/e-prolong.phi");
 
     //Compute the corrected approximation
     gridLoop3D(*u){
-      (*u)(i,j,k)+=(*fine)(i,j,k);
+      (*u)(i,j,k)+=e(i,j,k);
     }
 
     //Postsmoothing
-    cout << "done" << endl << "postsmoothing..." << flush;
     u->periodicBoundary();
     for (int i=0;i<v2;++i){
-      GS_LEX(u,&f,h);
+      GS_LEX(u,f,h);
     }
-
-    cout << "done" << endl << flush;
     return(u);
-  }
-  return(0);
 }
 //-----------------------------------------------------------------------------
 inline void GS_LEX(grid3D* u, grid3D* f, double h){
@@ -346,11 +327,12 @@ void L_heat_eqn(grid3D* L, int Nx, int Ny, double h, double dt){
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      (*L)(row,row,0)+=4+sq(h)/dt;
-      (*L)(row,j*Nx+(i+1)%Nx,0)+=-1;
-      (*L)(row,j*Nx+(i+Nx-1)%Nx,0)+=-1;
-      (*L)(row,((j+1)%Ny)*Nx+i,0)+=-1;
-      (*L)(row,((j+Ny-1)%Ny)*Nx+i,0)+=-1;
+      double dt_sqh=dt/sq(h);
+      (*L)(row,row,0)+=1+4*dt_sqh;
+      (*L)(row,j*Nx+(i+1)%Nx,0)+=-dt_sqh;
+      (*L)(row,j*Nx+(i+Nx-1)%Nx,0)+=-dt_sqh;
+      (*L)(row,((j+1)%Ny)*Nx+i,0)+=-dt_sqh;
+      (*L)(row,((j+Ny-1)%Ny)*Nx+i,0)+=-dt_sqh;
     }
 }
 //-----------------------------------------------------------------------------

@@ -32,30 +32,34 @@ int main(int argc, char **argv){
 
   //Cahn-hilliard and allen-cahn solvers
   initial_condition->initializeRandom(0,1);
-  grid3D* u=initial_condition;
   h=1./26;
-  double dt=.001;
-  initial_condition->writeToFile("output/init.phi");
+  int Nx=25, Ny=25;
+  double dt=.0001;
 
-  //Multigrid solver
-  multigrid(initial_condition,h,2);
-  initial_condition->writeToFile("output/out.multi.phi");
-/*
-  //Construct L
-  int Nx=25;
-  int Ny=25;
+  //create f
+  grid3D* f = new grid3D(Nx,Ny,1);
+  gridLoop3D(*f)
+      (*f)(i,j,k)=(*initial_condition)(i,j,k);
+
+  //Direct solver
+  grid3D* u3 = new grid3D(Nx,Ny,1);
+  gridLoop3D(*u3)
+    (*u3)(i,j,k)=(*initial_condition)(i,j,k);
   grid3D L(Nx*Ny,Nx*Ny,1);
   L_heat_eqn(&L,Nx,Ny,h,dt);
+  gaussian_elimination(&L,u3,f);
+  u3->writeToFile("output/out.direct.phi");
 
-  //Construct f
-  grid3D f(Nx,Ny,1);
-  for (int i=0; i<Nx; ++i)
-    for (int j=0; j<Ny; ++j)
-      f(i,j,0)=sq(h)/dt*(*u)(i,j,0);
+  //Multigrid solver
+  grid3D* u = new grid3D(Nx,Ny,1);
+  gridLoop3D(*u)
+    (*u)(i,j,k)=(*initial_condition)(i,j,k);
+  for (int n=0; n<5; ++n)
+    multigrid(u,f,h,2);
+  u->writeToFile("output/out.multi.phi");
 
-  gaussian_elimination(&L,u,&f);
-  initial_condition->writeToFile("output/out.dir.phi");
-*/
+  //Direct
+
 /*
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
   //allen_cahn3D(initial_phi,h,iterations,outputEvery);
