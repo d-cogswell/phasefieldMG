@@ -309,7 +309,7 @@ void grid3D::dirichletBoundary(void){
 //from the size of the coarse matrix
 grid3D* grid3D::prolongate(int Nx, int Ny){
   if (fine==NULL){
-    fine=new grid3D(Nx,Ny,1,0);
+    fine=new grid3D(Nx,Ny,1);
     fine->coarse=this;
   }
 
@@ -329,7 +329,7 @@ grid3D* grid3D::restrict(){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
 
-    coarse=new grid3D(N2x,N2y,1,0);
+    coarse=new grid3D(N2x,N2y,1);
     coarse->fine=this;
   }
 

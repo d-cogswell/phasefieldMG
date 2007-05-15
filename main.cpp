@@ -31,10 +31,10 @@ int main(int argc, char **argv){
   }
 
   //Cahn-hilliard and allen-cahn solvers
-  initial_condition->initializeRandom(0,1);
+  initial_condition->initializeSphere(5);
   h=1./26;
   int Nx=25, Ny=25;
-  double dt=.0001;
+  double dt=.001;
 
   //create f
   grid3D* f = new grid3D(Nx,Ny,1);
@@ -54,11 +54,9 @@ int main(int argc, char **argv){
   grid3D* u = new grid3D(Nx,Ny,1);
   gridLoop3D(*u)
     (*u)(i,j,k)=(*initial_condition)(i,j,k);
-  for (int n=0; n<5; ++n)
+  for (int n=0; n<20; ++n)
     multigrid(u,f,h,2);
   u->writeToFile("output/out.multi.phi");
-
-  //Direct
 
 /*
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);

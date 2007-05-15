@@ -248,7 +248,7 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
 
     //Set number of iterations on the fine grid and coarse grid
     int v1=1;
-    int v2=0;
+    int v2=1;
 
     //Create the restricted grids
     int Nx=u->getDimension(1);
@@ -257,7 +257,7 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     grid3D e(Nx,Ny,1);
 
     //Parameters
-    double dt=.0001;
+    double dt=.001;
 
     //Construct L
     grid3D L(Nx*Ny,Nx*Ny,1);
@@ -287,22 +287,22 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
 
     //Restrict the defect to a coarse mesh
     grid3D* d2h=d.restrict();
-    //grid3D* e2h=e.restrict();
+    grid3D* e2h=e.restrict();
 
     //Solve on the coarse mesh
-    int Nx2h=d2h->getDimension(1);
-    int Ny2h=d2h->getDimension(2);
-    grid3D L2h(Nx2h*Ny2h,Nx2h*Ny2h,1);
-    L_heat_eqn(&L2h,Nx2h,Ny2h,2*h,dt);
-    //gaussian_elimination(&L2h,e2h,d2h);
-    gaussian_elimination(&L,&e,&d);
-    //e.writeToFile("output/e.phi");
-    //grid3D* e2h=e.restrict();
+    if (level==max_level-1){
+      int Nx2h=d2h->getDimension(1);
+      int Ny2h=d2h->getDimension(2);
+      grid3D L2h(Nx2h*Ny2h,Nx2h*Ny2h,1);
+      L_heat_eqn(&L2h,Nx2h,Ny2h,2*h,dt);
+      gaussian_elimination(&L2h,e2h,d2h);
+    }
+    else{
+      multigrid(e2h,d2h,2*h,max_level,level+1);
+    }
 
     //Prolongate the error to the fine mesh
-    //e2h->writeToFile("output/e-restrict.phi");
-    //e2h->prolongate(Nx,Ny);
-    //e.writeToFile("output/e-prolong.phi");
+    e2h->prolongate(Nx,Ny);
 
     //Compute the corrected approximation
     gridLoop3D(*u){
