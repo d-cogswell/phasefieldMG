@@ -313,8 +313,8 @@ grid3D* grid3D::prolongate(int Nx, int Ny){
     fine->coarse=this;
   }
 
-  for (int i=0; i<N1-1; ++i)
-    for (int j=0; j<N2-1; ++j){
+  for (int i=0; i<N1; ++i)
+    for (int j=0; j<N2; ++j){
       (*fine)(2*i,2*j,0)=(*this)(i,j,0);
       (*fine)(2*i+1,2*j,0)=(*this)(i+.5,(double)j,0.);
       (*fine)(2*i,2*j+1,0)=(*this)((double)i,j+.5,0.);
