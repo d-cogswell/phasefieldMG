@@ -34,7 +34,7 @@ int main(int argc, char **argv){
   initial_condition->initializeSphere(5);
   h=1./26;
   int Nx=25, Ny=25;
-  double dt=.001;
+  double dt=.01;
 
   //create f
   grid3D* f = new grid3D(Nx,Ny,1);
