@@ -150,9 +150,7 @@ void grid3D::initializeGaussian(double sigma){
 //-----------------------------------------------------------------------------
 void grid3D::initializeSphere(double r){
   gridLoop{
-    //(*this)(i,j,k)=(sq(i-N1/2)+sq(j-N2/2)+sq(k-N3/2))<sq(r) ? 1 : 0;
-    double x=sqrt(sq(i-N1/2)+sq(j-N2/2)+sq(k-N3/2));
-    (*this)(i,j,k)=(*this)(i,j,k)+.5*(1-tanh((x-r)/2.));
+    (*this)(i,j,k)=(sq(i-N1/2)+sq(j-N2/2)+sq(k-N3/2))<sq(r) ? 1 : 0;
   }
 }
 //-----------------------------------------------------------------------------
@@ -334,9 +332,24 @@ grid3D* grid3D::restrict(){
   }
 
   gridLoop3D(*coarse){
-    (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
+    //(*coarse)(i,j,k)=(*this)(2*i,2*j,0);
+    (*coarse)(i,j,k)=1./16.*(4*(*this)(2*i,2*j,0)
+     +2*(*this)(2*i+1,2*j,0)+2*(*this)(2*i-1,2*j,0)
+     +2*(*this)(2*i,2*j+1,0)+2*(*this)(2*i,2*j-1,0)
+     +(*this)(2*i+1,2*j+1,0)+(*this)(2*i-1,2*j-1,0)
+     +(*this)(2*i+1,2*j-1,0)+(*this)(2*i-1,2*j+1,0));
+
   }
   return(coarse);
+}
+//-----------------------------------------------------------------------------
+double grid3D::l2_norm(){
+  double sum=0;
+  for (int j=0; j<N2; ++j){
+    for (int i=0; i<N1; ++i)
+      sum += sq((*this)(i,j,0));
+  }
+  return(sqrt(sum));
 }
 //-----------------------------------------------------------------------------
 void grid3D::writeToFile(char* file){

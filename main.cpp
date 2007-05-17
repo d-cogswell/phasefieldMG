@@ -27,37 +27,66 @@ int main(int argc, char **argv){
 
   if (!inputFileSupplied){
     cout << "No input file supplied!" << endl;
-    initial_condition = new grid3D(25,25,1);
+    initial_condition = new grid3D(33,33,1);
   }
 
   //Cahn-hilliard and allen-cahn solvers
-  initial_condition->initializeSphere(5);
+  initial_condition->initializeRandom(0,1);
+  initial_condition->periodicBoundary();
+  int Nx=33, Ny=33;
   h=1./26;
-  int Nx=25, Ny=25;
-  double dt=.01;
-
-  //create f
-  grid3D* f = new grid3D(Nx,Ny,1);
-  gridLoop3D(*f)
-      (*f)(i,j,k)=(*initial_condition)(i,j,k);
-
-  //Direct solver
+  double dt=.001;
+/*
+  //Iterative solver
   grid3D* u3 = new grid3D(Nx,Ny,1);
   gridLoop3D(*u3)
     (*u3)(i,j,k)=(*initial_condition)(i,j,k);
+  for (int n=0; n<dt/.0001; ++n){
+    u3->periodicBoundary();
+    gridLoop3D(*u3){
+      (*u3)(i,j,k)+=.0001/sq(h)*((*u3)(i+1,j,k)+(*u3)(i-1,j,k)+(*u3)(i,j+1,k)+(*u3)(i,j-1,k)-4*(*u3)(i,j,k));
+    }
+  }
+  u3->writeToFile("output/out.iter.phi");
+
+  //Direct solver
+  grid3D* u2 = new grid3D(Nx,Ny,1);
+  gridLoop3D(*u2)
+    (*u2)(i,j,k)=(*initial_condition)(i,j,k);
   grid3D L(Nx*Ny,Nx*Ny,1);
   L_heat_eqn(&L,Nx,Ny,h,dt);
-  gaussian_elimination(&L,u3,f);
-  u3->writeToFile("output/out.direct.phi");
-
+  gaussian_elimination(&L,u2,f);
+  u2->writeToFile("output/out.direct.phi");
+*/
   //Multigrid solver
-  grid3D* u = new grid3D(Nx,Ny,1);
-  gridLoop3D(*u)
-    (*u)(i,j,k)=(*initial_condition)(i,j,k);
-  for (int n=0; n<20; ++n)
-    multigrid(u,f,h,2);
-  u->writeToFile("output/out.multi.phi");
+  grid3D* f = new grid3D(Nx,Ny,1);
+  grid3D* u = initial_condition;
 
+  //Performs semi-implicit timestepping
+  for (int t=0; t<iterations; ++t){
+
+    //Write output, if necessary
+    char outFile[128];
+    if (!(t%outputEvery)){
+      sprintf(outFile,"output/p%6.6i.phi",t);
+      cout << "writing output: " << outFile << endl;
+      u->writeToFile(outFile);
+    }
+
+    //Create f
+    gridLoop3D(*f){
+      (*f)(i,j,k)=dt*((*initial_condition)(i+1,j,k)
+                     +(*initial_condition)(i-1,j,k)
+                     +(*initial_condition)(i,j+1,k)
+                     +(*initial_condition)(i,j-1,k))
+                     +(2*sq(h)-4*dt)*(*initial_condition)(i,j,k);
+    }
+
+    //Solve
+    for (int n=0; n<10; ++n){
+      multigrid(u,f,h,4);
+    }
+  }
 /*
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
   //allen_cahn3D(initial_phi,h,iterations,outputEvery);

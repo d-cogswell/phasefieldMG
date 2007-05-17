@@ -244,7 +244,7 @@ int binary_alloy3D(component A, component B, double T, grid3D* phi, grid3D* c, d
 //-----------------------------------------------------------------------------
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
-grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
+grid3D* multigrid(grid3D* u, grid3D* f, double h, int max_level, int level){
 
     //Set number of iterations on the fine grid and coarse grid
     int v1=1;
@@ -257,7 +257,7 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     grid3D e(Nx,Ny,1);
 
     //Parameters
-    double dt=.01;
+    double dt=.001;
 
     //Construct L
     grid3D L(Nx*Ny,Nx*Ny,1);
@@ -266,7 +266,7 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     //Presmoothing
     u->periodicBoundary();
     for (int i=0;i<v1;++i){
-      GS_LEX(u,f,h);
+      GS_LEX(&L,u,f,dt,h);
     }
 
     //Calculate the defect
@@ -283,6 +283,10 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     gridLoop3D(d)
       d(i,j,k)=(*f)(i,j,k)-f_smth(i,j,k);
 
+    if (level==1){
+      cout << d.l2_norm() << endl;
+    }
+
     //Direct solve on the coarsest mesh
     if (level==max_level){
       gaussian_elimination(&L,&e,&d);
@@ -290,7 +294,8 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     else{
       //solve the defect equation on a coarse mesh
       grid3D* e2h=e.restrict();
-      multigrid(e2h,d.restrict(),2*h,max_level,level+1);
+      grid3D* d2h=d.restrict();
+      multigrid(e2h,d2h,2*h,max_level,level+1);
 
       //Prolongate the error back to the fine mesh
       e2h->prolongate(Nx,Ny);
@@ -304,14 +309,16 @@ grid3D* multigrid(grid3D* u, grid3D * f, double h, int max_level, int level){
     //Postsmoothing
     u->periodicBoundary();
     for (int i=0;i<v2;++i){
-      GS_LEX(u,f,h);
+      GS_LEX(&L,u,f,dt,h);
     }
     return(u);
 }
 //-----------------------------------------------------------------------------
-inline void GS_LEX(grid3D* u, grid3D* f, double h){
+inline void GS_LEX(grid3D* L, grid3D* u, grid3D* f,double dt, double h){
+  int Nx=u->getDimension(1);
   gridLoop3D(*u){
-    (*u)(i,j,0)=.25*(sq(h)*(*f)(i,j,0)+(*u)(i+1,j,0)+(*u)(i-1,j,0)+(*u)(i,j+1,0)+(*u)(i,j-1,0));
+    double D=(*L)(j*Nx+i,j*Nx+i,0);
+    (*u)(i,j,k)=(dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k))+(*f)(i,j,k))/D;
   }
 }
 //-----------------------------------------------------------------------------
@@ -319,12 +326,11 @@ void L_heat_eqn(grid3D* L, int Nx, int Ny, double h, double dt){
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      double dt_sqh=dt/sq(h);
-      (*L)(row,row,0)+=1+4*dt_sqh;
-      (*L)(row,j*Nx+(i+1)%Nx,0)+=-dt_sqh;
-      (*L)(row,j*Nx+(i+Nx-1)%Nx,0)+=-dt_sqh;
-      (*L)(row,((j+1)%Ny)*Nx+i,0)+=-dt_sqh;
-      (*L)(row,((j+Ny-1)%Ny)*Nx+i,0)+=-dt_sqh;
+      (*L)(row,row,0)+=2*sq(h)+4*dt;
+      (*L)(row,j*Nx+(i+1)%Nx,0)+=-dt;
+      (*L)(row,j*Nx+(i+Nx-1)%Nx,0)+=-dt;
+      (*L)(row,((j+1)%Ny)*Nx+i,0)+=-dt;
+      (*L)(row,((j+Ny-1)%Ny)*Nx+i,0)+=-dt;
     }
 }
 //-----------------------------------------------------------------------------
