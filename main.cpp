@@ -27,37 +27,16 @@ int main(int argc, char **argv){
 
   if (!inputFileSupplied){
     cout << "No input file supplied!" << endl;
-    initial_condition = new grid3D(33,33,1);
+    initial_condition = new grid3D(129,129,1);
   }
 
   //Cahn-hilliard and allen-cahn solvers
   initial_condition->initializeRandom(0,1);
   initial_condition->periodicBoundary();
-  int Nx=33, Ny=33;
+  int Nx=129, Ny=129;
   h=1./26;
   double dt=.001;
-/*
-  //Iterative solver
-  grid3D* u3 = new grid3D(Nx,Ny,1);
-  gridLoop3D(*u3)
-    (*u3)(i,j,k)=(*initial_condition)(i,j,k);
-  for (int n=0; n<dt/.0001; ++n){
-    u3->periodicBoundary();
-    gridLoop3D(*u3){
-      (*u3)(i,j,k)+=.0001/sq(h)*((*u3)(i+1,j,k)+(*u3)(i-1,j,k)+(*u3)(i,j+1,k)+(*u3)(i,j-1,k)-4*(*u3)(i,j,k));
-    }
-  }
-  u3->writeToFile("output/out.iter.phi");
 
-  //Direct solver
-  grid3D* u2 = new grid3D(Nx,Ny,1);
-  gridLoop3D(*u2)
-    (*u2)(i,j,k)=(*initial_condition)(i,j,k);
-  grid3D L(Nx*Ny,Nx*Ny,1);
-  L_heat_eqn(&L,Nx,Ny,h,dt);
-  gaussian_elimination(&L,u2,f);
-  u2->writeToFile("output/out.direct.phi");
-*/
   //Multigrid solver
   grid3D* f = new grid3D(Nx,Ny,1);
   grid3D* u = initial_condition;
@@ -83,10 +62,11 @@ int main(int argc, char **argv){
     }
 
     //Solve
-    for (int n=0; n<10; ++n){
-      multigrid(u,f,h,4);
+    for (int n=0; n<15; ++n){
+      multigrid(u,f,h,7);
     }
   }
+  delete initial_condition,f;
 /*
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
   //allen_cahn3D(initial_phi,h,iterations,outputEvery);

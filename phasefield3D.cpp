@@ -259,29 +259,14 @@ grid3D* multigrid(grid3D* u, grid3D* f, double h, int max_level, int level){
     //Parameters
     double dt=.001;
 
-    //Construct L
-    grid3D L(Nx*Ny,Nx*Ny,1);
-    L_heat_eqn(&L,Nx,Ny,h,dt);
-
     //Presmoothing
     u->periodicBoundary();
     for (int i=0;i<v1;++i){
-      GS_LEX(&L,u,f,dt,h);
+      GS_LEX(u,f,dt,h);
     }
 
     //Calculate the defect
-    grid3D f_smth(Nx,Ny,1);
-    for (int i=0; i<Nx; ++i)
-      for (int j=0; j<Ny; ++j){
-        int row=j*Nx+i;
-	for (int k=0; k<Nx; ++k)
-	  for (int l=0; l<Ny; ++l){
-            int col=l*Nx+k;
-	    f_smth(i,j,0)+=L(row,col,0)*(*u)(k,l,0);
-	  }
-      }
-    gridLoop3D(d)
-      d(i,j,k)=(*f)(i,j,k)-f_smth(i,j,k);
+    dfct_heat_eqn(&d,u,f,dt,h);
 
     if (level==1){
       cout << d.l2_norm() << endl;
@@ -289,6 +274,8 @@ grid3D* multigrid(grid3D* u, grid3D* f, double h, int max_level, int level){
 
     //Direct solve on the coarsest mesh
     if (level==max_level){
+      grid3D L(Nx*Ny,Nx*Ny,1);
+      L_heat_eqn(&L,Nx,Ny,h,dt);
       gaussian_elimination(&L,&e,&d);
     }
     else{
@@ -309,20 +296,25 @@ grid3D* multigrid(grid3D* u, grid3D* f, double h, int max_level, int level){
     //Postsmoothing
     u->periodicBoundary();
     for (int i=0;i<v2;++i){
-      GS_LEX(&L,u,f,dt,h);
+      GS_LEX(u,f,dt,h);
     }
     return(u);
 }
 //-----------------------------------------------------------------------------
-inline void GS_LEX(grid3D* L, grid3D* u, grid3D* f,double dt, double h){
-  int Nx=u->getDimension(1);
+inline void GS_LEX(grid3D* u, grid3D* f,double dt, double h){
+  double D=2*sq(h)+4*dt;
   gridLoop3D(*u){
-    double D=(*L)(j*Nx+i,j*Nx+i,0);
     (*u)(i,j,k)=(dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k))+(*f)(i,j,k))/D;
   }
 }
 //-----------------------------------------------------------------------------
-void L_heat_eqn(grid3D* L, int Nx, int Ny, double h, double dt){
+inline void dfct_heat_eqn(grid3D* d, grid3D* u, grid3D* f,double dt, double h){
+  gridLoop3D(*d){
+    (*d)(i,j,k)=(2*sq(h)+4*dt)*(*u)(i,j,k)-dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k))-(*f)(i,j,k);
+  }
+}
+//-----------------------------------------------------------------------------
+inline void L_heat_eqn(grid3D* L, int Nx, int Ny, double h, double dt){
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
@@ -370,4 +362,5 @@ void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){
   gridLoop3D(*u){
     (*u)(i,j,0)=(*f_col)(j*Nx+i,0,0);
   }
+  delete f_col;
 }
