@@ -91,13 +91,9 @@ grid3D::~grid3D(void){
 
   deleted=1;
 
-  int n1=N1+2*boundary;
-  int n2=N2+2*boundary;
-  int n3=N3+2*boundary;
-
-  if (n1 && n2 && n3){
-  for (int i=0; i<N1; ++i){
-    for (int j=0; j<N2; ++j)
+  if (N1 && N2 && N3){
+  for (int i=0; i<N1+2*boundary; ++i){
+    for (int j=0; j<N2+2*boundary; ++j)
       delete [] grid[i][j];
     delete [] grid[i];
   }
