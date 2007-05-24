@@ -146,7 +146,7 @@ void grid3D::initializeGaussian(double sigma){
 //-----------------------------------------------------------------------------
 void grid3D::initializeSphere(double r){
   gridLoop{
-    (*this)(i,j,k)=(sq(i-N1/2)+sq(j-N2/2)+sq(k-N3/2))<sq(r) ? 1 : 0;
+    (*this)(i,j,k)=(sq(i-N1/2)+sq(j-N2/2)+sq(k-N3/2))<=sq(r) ? 1 : 0;
   }
 }
 //-----------------------------------------------------------------------------
@@ -363,13 +363,13 @@ void grid3D::writeToFile(char *file, int includeBndry){
     ref_pt=0;
   }
   
-  outFile << N1+2*ref_pt << " " << N2+2*ref_pt << " " << N3+2*ref_pt << endl;
+  outFile << N1+2*ref_pt << " " << N2+2*ref_pt << " " << N3+2*ref_pt << "\n";
 
   for (int k=-ref_pt; k<N3+ref_pt; k++){
     for (int j=-ref_pt; j<N2+ref_pt; j++){  
       for (int i=-ref_pt; i<N1+ref_pt; i++)
         outFile << (*this)(i,j,k) << " ";
-      outFile << endl;
+      outFile << "\n";
     }
   }
   outFile.close();
@@ -378,13 +378,13 @@ void grid3D::writeToFile(char *file, int includeBndry){
 void grid3D::writeToFileDx(char* file){
   ofstream outFile(file);
 
-  outFile << "object 1 class gridpositions counts " << N1 << " " << N2 << " " << N3 << endl;
-  outFile << "origin 0 0 0" << endl;
-  outFile << "delta 1 0 0" << endl;
-  outFile << "delta 0 1 0" << endl;
-  outFile << "delta 0 0 1" << endl;
-  outFile << "object 2 class gridconnections counts " << N1 <<  " " << N2 << " "<< N3 << endl;
-  outFile << "object 3 class array type double rank 0 items " << N1*N2*N3 << " data follows" << endl;
+  outFile << "object 1 class gridpositions counts " << N1 << " " << N2 << " " << N3 << "\n";
+  outFile << "origin 0 0 0" << "\n";
+  outFile << "delta 1 0 0" << "\n";
+  outFile << "delta 0 1 0" << "\n";
+  outFile << "delta 0 0 1" << "\n";
+  outFile << "object 2 class gridconnections counts " << N1 <<  " " << N2 << " "<< N3 << "\n";
+  outFile << "object 3 class array type double rank 0 items " << N1*N2*N3 << " data follows" << "\n";
 
   int ret=0;
   for (int i=0; i<N1; i++)
@@ -392,11 +392,11 @@ void grid3D::writeToFileDx(char* file){
       for (int k=0; k<N3; k++){
         outFile << (*this)(i,j,k) << " ";
         if (ret==2)
-          outFile << endl;
+          outFile << "\n";
         ret=(ret+1)%3;
       }
-  outFile << endl;
-  outFile << "object 'awesome' class field" << endl;
+  outFile << "\n";
+  outFile << "object 'awesome' class field" << "\n";
   outFile.close();
 }
 //-----------------------------------------------------------------------------
