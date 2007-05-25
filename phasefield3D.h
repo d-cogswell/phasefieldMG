@@ -46,9 +46,10 @@ int allen_cahn3D(grid3D*,double,int,int);
 int liquid_solid3D(component,double,grid3D*,double,int,int);
 int binary_alloy3D(component,component,double,grid3D*,grid3D*,double,int,int);
 int ternary_alloy3D(component,component,component,double,grid3D*,grid3D*,grid3D*,double,int,int);
-inline void GS_LEX(grid3D*,grid3D*,double,double);
+inline void GS_LEX_heat_eqn(grid3D*,grid3D*,double,double);
 inline void dfct_heat_eqn(grid3D*,grid3D*,grid3D*,double,double);
-inline void L_heat_eqn(grid3D*,int,int,double,double);
-grid3D* multigrid(grid3D*,grid3D*,double,int=2,int=1);
+void L_heat_eqn(grid3D*,int,int,double,double);
+void f_heat_eqn(grid3D*,grid3D*,double,double);
+double multigrid(grid3D*,grid3D*,double,double,int=2,int=1);
 void gaussian_elimination(grid3D*,grid3D*,grid3D*);
 #endif

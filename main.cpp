@@ -6,7 +6,9 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
+  int Nx=33,Ny=33;
   double h=1;
+  double dt=.1;
   int iterations=10;
   int outputEvery=1;
 
@@ -27,22 +29,15 @@ int main(int argc, char **argv){
 
   if (!inputFileSupplied){
     cout << "No input file supplied!" << endl;
-    initial_condition = new grid3D(129,129,1);
+    initial_condition = new grid3D(Nx,Ny,1);
   }
 
-  //Cahn-hilliard and allen-cahn solvers
   initial_condition->initializeRandom(0,1);
-  initial_condition->periodicBoundary();
-  int Nx=129, Ny=129;
-  h=1./26;
-  double dt=.001;
-
-  //Multigrid solver
   grid3D* f = new grid3D(Nx,Ny,1);
   grid3D* u = initial_condition;
 
   //Performs semi-implicit timestepping
-  for (int t=0; t<iterations; ++t){
+  for (int t=0; t<=iterations; ++t){
 
     //Write output, if necessary
     char outFile[128];
@@ -53,18 +48,18 @@ int main(int argc, char **argv){
     }
 
     //Create f
-    gridLoop3D(*f){
-      (*f)(i,j,k)=dt*((*initial_condition)(i+1,j,k)
-                     +(*initial_condition)(i-1,j,k)
-                     +(*initial_condition)(i,j+1,k)
-                     +(*initial_condition)(i,j-1,k))
-                     +(2*sq(h)-4*dt)*(*initial_condition)(i,j,k);
-    }
+    u->periodicBoundary();
+    f_heat_eqn(f,u,dt,h);
 
-    //Solve
-    for (int n=0; n<15; ++n){
-      multigrid(u,f,h,7);
-    }
+/*
+    //Direct solve
+    grid3D L(Nx*Ny,Nx*Ny,1);
+    L_heat_eqn(&L,Nx,Ny,dt,h);
+    gaussian_elimination(&L,u,f);
+*/
+
+    //multigrid
+    while(multigrid(u,f,dt,h,5)>1.e-7);
   }
   delete initial_condition,f;
 /*
