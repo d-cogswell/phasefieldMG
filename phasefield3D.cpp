@@ -305,7 +305,7 @@ inline void GS_LEX_heat_eqn(grid3D* u, grid3D* f, double dt, double h){
 //-----------------------------------------------------------------------------
 inline void dfct_heat_eqn(grid3D* d, grid3D* u, grid3D* f, double dt, double h){
   gridLoop3D(*d){
-    (*d)(i,j,k)=(2*sq(h)+4*dt)*(*u)(i,j,k)-dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k))-(*f)(i,j,k);
+    (*d)(i,j,k)=(*f)(i,j,k)-(2*sq(h)+4*dt)*(*u)(i,j,k)+dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k));
   }
 }
 //-----------------------------------------------------------------------------
