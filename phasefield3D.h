@@ -14,7 +14,8 @@ using namespace std;
 //-----------------------------------------------------------------------------
 /*I use the energy density function of Eggleston, McFadden, Voorhees:
    f(c)=1/4*W*c^2(1-c)^2 */
-#define DfDphi(phi) (4*(cube(phi) - 1.5*sq(phi) + .5*phi))
+//#define DfDphi(phi) (4*(cube(phi) - 1.5*sq(phi) + .5*phi))
+#define DfDphi(phi) (cube(phi)-phi)
 
 //Mobility dependence on phi
 //-----------------------------------------------------------------------------
@@ -46,8 +47,12 @@ int allen_cahn3D(grid3D*,double,int,int);
 int liquid_solid3D(component,double,grid3D*,double,int,int);
 int binary_alloy3D(component,component,double,grid3D*,grid3D*,double,int,int);
 int ternary_alloy3D(component,component,component,double,grid3D*,grid3D*,grid3D*,double,int,int);
-inline void GS_LEX_heat_eqn(grid3D*,grid3D*,double,double);
-inline void dfct_heat_eqn(grid3D*,grid3D*,grid3D*,double,double);
+void GS_LEX_CH(grid3D*,grid3D*,double,double);
+void dfct_CH(grid3D*,grid3D*,grid3D*,double,double);
+void L_CH(grid3D*,int,int,double,double);
+void f_CH(grid3D*,grid3D*,double,double);
+void GS_LEX_heat_eqn(grid3D*,grid3D*,double,double);
+void dfct_heat_eqn(grid3D*,grid3D*,grid3D*,double,double);
 void L_heat_eqn(grid3D*,int,int,double,double);
 void f_heat_eqn(grid3D*,grid3D*,double,double);
 double multigrid(grid3D*,grid3D*,double,double,int=2,int=1);

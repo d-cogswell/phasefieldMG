@@ -6,11 +6,11 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
-  int Nx=33,Ny=33;
+  int Nx=129,Ny=129;
   double h=1;
   double dt=.1;
-  int iterations=10;
-  int outputEvery=1;
+  int iterations=1000;
+  int outputEvery=100;
 
   char* filename;
   grid3D* initial_condition;
@@ -32,7 +32,7 @@ int main(int argc, char **argv){
     initial_condition = new grid3D(Nx,Ny,1);
   }
 
-  initial_condition->initializeRandom(0,1);
+  initial_condition->initializeGaussian(.01);
   grid3D* f = new grid3D(Nx,Ny,1);
   grid3D* u = initial_condition;
 
@@ -49,22 +49,19 @@ int main(int argc, char **argv){
 
     //Create f
     u->periodicBoundary();
-    f_heat_eqn(f,u,dt,h);
+    f_CH(f,u,dt,h);
 
-/*
     //Direct solve
-    grid3D L(Nx*Ny,Nx*Ny,1);
-    L_heat_eqn(&L,Nx,Ny,dt,h);
-    gaussian_elimination(&L,u,f);
-*/
+    //grid3D L(Nx*Ny,Nx*Ny,1);
+    //L_CH(&L,Nx,Ny,dt,h);
+    //gaussian_elimination(&L,u,f);
 
     //multigrid
-    while(multigrid(u,f,dt,h,5)>1.e-7);
+    while(multigrid(u,f,dt,h,7)>1.e-5);
   }
-  delete initial_condition,f;
-/*
+
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
   //allen_cahn3D(initial_phi,h,iterations,outputEvery);
-*/
+  delete initial_condition,f;
   return 0;
 }
