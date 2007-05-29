@@ -34,7 +34,10 @@ int main(int argc, char **argv){
 
   initial_condition->initializeGaussian(.01);
   grid3D* f = new grid3D(Nx,Ny,1);
+  grid3D* d = new grid3D(Nx,Ny,1);
+  grid3D* e = new grid3D(Nx,Ny,1);
   grid3D* u = initial_condition;
+  grid3D* L = NULL;
 
   //Performs semi-implicit timestepping
   for (int t=0; t<=iterations; ++t){
@@ -57,11 +60,11 @@ int main(int argc, char **argv){
     //gaussian_elimination(&L,u,f);
 
     //multigrid
-    while(multigrid(u,f,dt,h,7)>1.e-5);
+    while(multigrid(&L,u,f,d,e,dt,h,6)>1.e-5);
   }
 
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
   //allen_cahn3D(initial_phi,h,iterations,outputEvery);
-  delete initial_condition,f;
+  delete initial_condition,L,f;
   return 0;
 }

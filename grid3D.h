@@ -50,6 +50,7 @@ class grid3D{
   void dirichletBoundary(void);
   grid3D* prolongate(int,int);
   grid3D* restrict();
+  grid3D* getCoarseGrid();
   double l2_norm();
   void writeToFile(char*);
   void writeToFile(char*,int);

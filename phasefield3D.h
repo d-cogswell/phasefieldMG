@@ -33,7 +33,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 int cahn_hilliard3D(grid3D*,double,int,int);
 int allen_cahn3D(grid3D*,double,int,int);
-double multigrid(grid3D*,grid3D*,double,double,int=2,int=1);
+double multigrid(grid3D**,grid3D*,grid3D*,grid3D*,grid3D*,double,double,int=2,int=1);
 void gaussian_elimination(grid3D*,grid3D*,grid3D*);
 
 

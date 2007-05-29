@@ -339,6 +339,16 @@ grid3D* grid3D::restrict(){
   return(coarse);
 }
 //-----------------------------------------------------------------------------
+grid3D* grid3D::getCoarseGrid(){
+  if (coarse==NULL){
+    int N2x=(N1+1)/2;
+    int N2y=(N2+1)/2;
+    coarse=new grid3D(N2x,N2y,1);
+    coarse->fine=this;
+  }
+  return(coarse);
+}
+//-----------------------------------------------------------------------------
 double grid3D::l2_norm(){
   double sum=0;
   for (int j=0; j<N2; ++j){

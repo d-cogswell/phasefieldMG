@@ -6,7 +6,7 @@
 int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
 
   //Global variables
-  double dt=.01;
+  double dt=.001;
   double K=1.5;
   double M=1.0;
   char outFile[128];
@@ -101,7 +101,7 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 //-----------------------------------------------------------------------------
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
-double multigrid(grid3D* u, grid3D* f, double dt, double h, int max_level, int level){
+double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double dt, double h, int max_level, int level){
 
     //Set number of iterations on the fine grid and coarse grid
     int v1=1;
@@ -110,8 +110,6 @@ double multigrid(grid3D* u, grid3D* f, double dt, double h, int max_level, int l
     //Create the restricted grids
     int Nx=u->getDimension(1);
     int Ny=u->getDimension(2);
-    grid3D d(Nx,Ny,1);
-    grid3D e(Nx,Ny,1);
 
     //Presmoothing
     u->periodicBoundary();
@@ -120,19 +118,20 @@ double multigrid(grid3D* u, grid3D* f, double dt, double h, int max_level, int l
     }
 
     //Calculate the defect
-    dfct_CH(&d,u,f,dt,h);
+    dfct_CH(d,u,f,dt,h);
 
     //Direct solve on the coarsest mesh
     if (level==max_level){
-      grid3D L(Nx*Ny,Nx*Ny,1);
-      L_CH(&L,Nx,Ny,dt,h);
-      gaussian_elimination(&L,&e,&d);
+      if (*L==NULL){
+        *L = new grid3D(Nx*Ny,Nx*Ny,1);
+        L_CH(*L,Nx,Ny,dt,h);
+      }
+      gaussian_elimination(*L,e,d);
     }
     else{
       //solve the defect equation on a coarse mesh
-      grid3D* e2h=e.restrict();
-      grid3D* d2h=d.restrict();
-      multigrid(e2h,d2h,dt,2*h,max_level,level+1);
+      grid3D* e2h=e->restrict();
+      multigrid(L,e2h,d->restrict(),u->getCoarseGrid(),f->getCoarseGrid(),dt,2*h,max_level,level+1);
 
       //Prolongate the error back to the fine mesh
       e2h->prolongate(Nx,Ny);
@@ -140,7 +139,7 @@ double multigrid(grid3D* u, grid3D* f, double dt, double h, int max_level, int l
 
     //Compute the corrected approximation
     gridLoop3D(*u){
-      (*u)(i,j,k)+=e(i,j,k);
+      (*u)(i,j,k)+=(*e)(i,j,k);
     }
 
     //Postsmoothing
@@ -150,7 +149,7 @@ double multigrid(grid3D* u, grid3D* f, double dt, double h, int max_level, int l
     }
 
     if (level==1)
-      return(d.l2_norm());
+      return(d->l2_norm());
 }
 //-----------------------------------------------------------------------------
 void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){
