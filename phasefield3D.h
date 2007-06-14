@@ -69,7 +69,7 @@ inline void dfct_CH(grid3D* d, grid3D* u, grid3D* f,double dt, double h){
     int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
     int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
     (*d)(i,j,k)=(*f)(i,j,k)-(*u)(i,j,k)-dt*(
-      K*(20*(*u)(i,j,k)
+      K/(h*h*h*h)*(20*(*u)(i,j,k)
         -8*((*u)(i1,j,k)+(*u)(i_1,j,k)+(*u)(i,j1,k)+(*u)(i,j_1,k))
         +2*((*u)(i1,j1,k)+(*u)(i_1,j_1,k)+(*u)(i1,j_1,k)+(*u)(i_1,j1,k))
         +((*u)(i2,j,k)+(*u)(i_2,j,k)+(*u)(i,j2,k)+(*u)(i,j_2,k)))
