@@ -1,46 +1,19 @@
-TARGET = mse3D 
-SOURCE = main.cpp phasefield3D.cpp
-SOURCEMPI = main.cpp convexificationMPI.cpp
-#CC = icc
-CC = g++ 
-CCMPI = mpic++
-CLIBS = -L. -lgrid3D -lpthread -L/usr/X11R6/lib -lX11
-CLIBSMPI = -L. -lgrid3DMPI
-#CFLAGS = -static -O3 -ipo -xN
-CFLAGS = -O3
-CFLAGSMPI = -O3 #-Wno-long-double
+TARGET = mse3D
 
-$(TARGET): $(SOURCE)
-	#make grid3D
-	$(CC) $(CFLAGS) $(SOURCE) $(CLIBS) -o $(TARGET)
+CXX = icpc
+CXXFLAGS = -O3 -xT -parallel -pthread
+OBJECTS = main.o phasefield3D.o libgrid3D.a
+LIBS = -L. -lgrid3D
 
-debug: $(SOURCE)
-	make grid3D
-	$(CC) $(CFLAGS) -g $(SOURCE) $(CLIBS) -o $(TARGET)
+$(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)
 
-MPI: $(SOURCEMPI) 
-	make grid3D
-	make grid3DMPI
-	$(CCMPI) $(CFLAGSMPI) $(SOURCEMPI) $(CLIBSMPI) -o $(TARGET)
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $?
 
-grid3D:
-	$(CC) -c $(CFLAGS) grid3D.cpp
-	ar rc libgrid3D.a grid3D.o
-	ranlib libgrid3D.a
-
-grid3DMPI:
-	$(CCMPI) -c $(CFLAGS) grid3DMPI.cpp
-	ar rc libgrid3DMPI.a grid3DMPI.o
-	ranlib libgrid3DMPI.a
-
-merge:
-	make grid3D
-	$(CC) merge.cpp -o merge -L. -lgrid3D
-
-dxconvert:
-	make grid3D
-	$(CC) dxconvert.cpp -o dxconvert -L. -lgrid3D
+lib%.a: %.o
+	ar rc $@ $?
+	ranlib $@
 
 clean:
-	rm $(TARGET)
-	rm output/*
+	rm $(TARGET) *.o *.a output/*
