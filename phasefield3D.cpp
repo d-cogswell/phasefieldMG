@@ -8,20 +8,13 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
   //Global variables
   double dt=.001;
   double K=1.5;
-  double M=1.0;
   char outFile[128];
 
   int Nx=phi->getDimension(1);
   int Ny=phi->getDimension(2);
   int Nz=phi->getDimension(3);
   grid3D insideTerms(Nx,Ny,Nz);
-
-  //If mobility is defined as a function of phi in the header file
-  //allocate space for a mobility grid here
-  #ifdef M
-  grid3D mobility(Nx,Ny,Nz);
-  double **M = mobility.getGrid();
-  #endif
+  Image img(Geometry(Nx,Ny),"black");
 
   //Begin iterating
   //---------------------------------------------------------------------------
@@ -29,9 +22,14 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Write output, if necessary
     if (!(n%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.phi",n);
+      sprintf(outFile,"output/p%6.6i.png",n);
       cout << "writing output: " << outFile << endl;
-      phi->writeToFile(outFile);
+      gridLoop3D(*phi){
+        double val=(1+(*phi)(i,j,0))/2;
+        val=MaxRGB*clip(val,0,1);
+        img.pixelColor(i,j,Color(val,val,val,0));
+      }
+      img.write(outFile);
     }
 
     //Set boundary conditions for phi
@@ -40,11 +38,6 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
     //Compute mobility, and the inner terms of the cahn-hilliard equation
     gridLoop3D(*phi){
       insideTerms(i,j,k)=DfDphi((*phi)(i,j,k))-K*laplacian((*phi));
-
-      //If mobility is not constant, calculate it
-      #ifdef M
-      M(i,j,k)=M(grid1,i,j,h);
-      #endif
     }
 
     /* It's necessary to impose boundary conditions on insideTerms, 
@@ -55,12 +48,7 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Solve the Cahn-Hilliard equation using Forward Euler time-stepping
     gridLoop3D(*phi){
-      #ifdef M
-      double dphidt = M(i,j,k)*laplacian(insideTerms)+gradDot(M,insideTerms,i,j,h);
-      #else
-      double dphidt = M*laplacian(insideTerms);
-      #endif
-
+      double dphidt = laplacian(insideTerms);
       (*phi)(i,j,k)=(*phi)(i,j,k)+dphidt*dt;
     }
   }
@@ -73,8 +61,8 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
   //Global variables
   double dt=.001;
   double K=1.5;
-  double M=2.0;
   char outFile[128];
+  Image img(Geometry(phi->getDimension(1),phi->getDimension(2)),"black");
 
   //Begin iterating
   //---------------------------------------------------------------------------
@@ -82,9 +70,14 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Write output, if necessary
     if (!(n%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.phi",n);
+      sprintf(outFile,"output/p%6.6i.png",n);
       cout << "writing output: " << outFile << endl;
-      phi->writeToFile(outFile);
+      gridLoop3D(*phi){
+        double val=(1+(*phi)(i,j,0))/2;
+        val=MaxRGB*clip(val,0,1);
+        img.pixelColor(i,j,Color(val,val,val,0));
+      }
+      img.write(outFile);
     }
 
     //Set boundary conditions for phi
@@ -92,7 +85,7 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Solve the Allen-Cahn equation using forward euler timestepping
     gridLoop3D(*phi){
-      double dphidt=-M*(DfDphi((*phi)(i,j,k))-K*laplacian((*phi)));
+      double dphidt=-(DfDphi((*phi)(i,j,k))-K*laplacian((*phi)));
       (*phi)(i,j,k)=(*phi)(i,j,k)+dphidt*dt;
     }
   }

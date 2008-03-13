@@ -15,6 +15,7 @@ int main(int argc, char **argv){
   char* filename;
   grid3D* initial_condition;
   int option_char;
+ Image img(Geometry(Nx,Ny),"black");
 
   // Handle command line options
   bool inputFileSupplied=false;
@@ -45,9 +46,14 @@ int main(int argc, char **argv){
     //Write output, if necessary
     char outFile[128];
     if (!(t%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.phi",t);
+      sprintf(outFile,"output/p%6.6i.png",t);
       cout << "writing output: " << outFile << endl;
-      u->writeToFile(outFile);
+      gridLoop3D(*u){
+        double val=(1+(*u)(i,j,0))/2;
+        val=MaxRGB*clip(val,0,1);
+        img.pixelColor(i,j,Color(val,val,val,0));
+      }
+      img.write(outFile);
     }
 
     //Create f
@@ -64,7 +70,7 @@ int main(int argc, char **argv){
   }
 
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
-  //allen_cahn3D(initial_phi,h,iterations,outputEvery);
+  //allen_cahn3D(initial_condition,h,iterations,outputEvery);
   delete initial_condition,L,f;
   return 0;
 }

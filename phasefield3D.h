@@ -2,9 +2,11 @@
 #define _PHASEFIELD3D_H_
 
 #include <iostream>
+#include <Magick++.h>
 #include "grid3D.h"
 #include "macros3D.h"
 using namespace std;
+using namespace Magick;
 
 //Boundary layers
 //-----------------------------------------------------------------------------
@@ -17,20 +19,13 @@ using namespace std;
 //#define DfDphi(phi) (4*(cube(phi) - 1.5*sq(phi) + .5*phi))
 #define DfDphi(phi) (cube(phi)-phi)
 
-//Mobility dependence on phi
-//-----------------------------------------------------------------------------
-/*If M(phi,i,j,h) is not defined, constant mobility is assumed.  
- *The constant mobility case is much faster to compute. */
-//#define M(phi,i,j,h) sq(phi)*sq(phi-1)
-
-//This model makes the mobility highest where the gradient is high
-//#define M(phi,i,j,h) (sq(DX2D(phi,i,j,h))+sq(DY2D(phi,i,j,h)))
-
-//#define M(phi,i,j,h) .5*((DX2D(phi,i,j,h)==0) ? 0 : (1+cos(4*atan(DY2D(phi,i,j,h)/DX2D(phi,i,j,h)))))
-//-----------------------------------------------------------------------------
 
 //Function definitions
 //-----------------------------------------------------------------------------
+inline double clip(double n, double low, double high){
+  return(n<low ? low : (n>high ? high : n));
+}
+
 int cahn_hilliard3D(grid3D*,double,int,int);
 int allen_cahn3D(grid3D*,double,int,int);
 double multigrid(grid3D**,grid3D*,grid3D*,grid3D*,grid3D*,double,double,int=2,int=1);
