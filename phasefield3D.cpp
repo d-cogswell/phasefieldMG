@@ -126,7 +126,7 @@ double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double d
       dfct_CH(d,u,f,dt,h);
 
       //solve the defect equation on a coarse mesh
-      multigrid(L,e->restrict(),d->restrict(),u->getCoarseGrid(),f->getCoarseGrid(),dt,2*h,max_level,level+1);
+      multigrid(L,u->getCoarseGrid(),f->getCoarseGrid(),d->restrict(),e->restrict(),dt,2*h,max_level,level+1);
 
       //Prolongate the error to the fine mesh
       e->getCoarseGrid()->prolongate(Nx,Ny);
