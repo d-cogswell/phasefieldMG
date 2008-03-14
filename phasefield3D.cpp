@@ -96,22 +96,13 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 //levels.   max_levels=2 corresponds to the two grid scheme.
 double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double dt, double h, int max_level, int level){
 
-    //Set number of iterations on the fine grid and coarse grid
-    int v1=1;
-    int v2=1;
-
-    //Create the restricted grids
+    //Get the grid dimensions for the current level
     int Nx=u->getDimension(1);
     int Ny=u->getDimension(2);
 
-    //Presmoothing
-    u->periodicBoundary();
-    for (int i=0;i<v1;++i){
-      GS_LEX_CH(u,f,dt,h);
-    }
-
-    //Calculate the defect
-    dfct_CH(d,u,f,dt,h);
+    //Set number of iterations on the fine grid and coarse grid
+    int v1=1;
+    int v2=1;
 
     //Direct solve on the coarsest mesh
     if (level==max_level){
@@ -121,24 +112,33 @@ double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double d
       }
       gaussian_elimination(*L,e,d);
     }
+
+    //Otherwise perform a coarse grid correction
     else{
+
+      //Presmoothing
+      u->periodicBoundary();
+      for (int i=0;i<v1;++i){
+        GS_LEX_CH(u,f,dt,h);
+      }
+
+      //Compute the defect
+      dfct_CH(d,u,f,dt,h);
+
       //solve the defect equation on a coarse mesh
-      grid3D* e2h=e->restrict();
-      multigrid(L,e2h,d->restrict(),u->getCoarseGrid(),f->getCoarseGrid(),dt,2*h,max_level,level+1);
+      multigrid(L,e->restrict(),d->restrict(),u->getCoarseGrid(),f->getCoarseGrid(),dt,2*h,max_level,level+1);
 
-      //Prolongate the error back to the fine mesh
-      e2h->prolongate(Nx,Ny);
-    }
+      //Prolongate the error to the fine mesh
+      e->getCoarseGrid()->prolongate(Nx,Ny);
 
-    //Compute the corrected approximation
-    gridLoop3D(*u){
-      (*u)(i,j,k)+=(*e)(i,j,k);
-    }
+      //Compute the corrected approximation
+      gridLoop3D(*u)
+        (*u)(i,j,k)+=(*e)(i,j,k);
 
-    //Postsmoothing
-    u->periodicBoundary();
-    for (int i=0;i<v2;++i){
-      GS_LEX_CH(u,f,dt,h);
+      //Postsmoothing
+      u->periodicBoundary();
+      for (int i=0;i<v2;++i)
+        GS_LEX_CH(u,f,dt,h);
     }
 
     if (level==1)
