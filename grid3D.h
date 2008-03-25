@@ -14,8 +14,6 @@
 #include <math.h>
 using namespace std;
 
-#define gridLoop3D(grid) for (int i=0; i<(grid).getDimension(1); ++i) for (int j=0; j<(grid).getDimension(2); ++j) for (int k=0; k<(grid).getDimension(3); ++k)
-
 #define X_DIM 1
 #define Y_DIM 2
 #define Z_DIM 3
@@ -24,6 +22,19 @@ using namespace std;
 #define XZ_PLANE 9
 #define YZ_PLANE 10
 
+//A macro for looping over a grid3D object
+//-----------------------------------------------------------------------------
+#define gridLoop3D(grid) for (int i=0; i<(grid).getDimension(1); ++i) for (int j=0; j<(grid).getDimension(2); ++j) for (int k=0; k<(grid).getDimension(3); ++k)
+
+//Math Macros
+//-----------------------------------------------------------------------------
+#define sq(x) ((x)*(x))
+#define cube(x) ((x)*sq(x))
+#define abs(x) ((x)<0 ? (-(x)) : (x))
+
+//Phyiscal Constants
+//-----------------------------------------------------------------------------
+#define PI 3.14159
 
 class grid3D{
  public:
@@ -61,6 +72,18 @@ class grid3D{
   grid3D* select(int,int,int,int,int,int);
   inline double& operator()(int,int,int);
   inline double operator()(double,double,double);
+
+  //Finite difference operators
+  inline double DX(int i,int j,int k,double h){return((*this)(i+1,j,k)-(*this)(i-1,j,k))/(2*h);}
+  inline double DY(int i,int j,int k,double h){return((*this)(i,j+1,k)-(*this)(i,j-1,k))/(2*h);}
+  inline double DZ(int i,int j,int k,double h){return((*this)(i,j,k+1)-(*this)(i,j,k-1))/(2*h);}
+
+  inline double DXX(int i,int j,int k,double h) {return(((*this)(i+1,j,k)+(*this)(i-1,j,k)-2*(*this)(i,j,k))/sq(h));}
+  inline double DYY(int i,int j,int k,double h) {return(((*this)(i,j+1,k)+(*this)(i,j-1,k)-2*(*this)(i,j,k))/sq(h));}
+  inline double DZZ(int i,int j,int k,double h) {return(((*this)(i,j,k+1)+(*this)(i,j,k-1)-2*(*this)(i,j,k))/sq(h));}
+
+  inline double laplacian(int i, int j, int k,double h) {return(DXX(i,j,k,h)+DYY(i,j,k,h)+DZZ(i,j,k,h));}
+
   void operator=(const double);
   void operator=(grid3D);
   grid3D *coarse, *fine;

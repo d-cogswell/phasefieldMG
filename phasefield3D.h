@@ -4,7 +4,6 @@
 #include <iostream>
 #include <Magick++.h>
 #include "grid3D.h"
-#include "macros3D.h"
 using namespace std;
 using namespace Magick;
 
@@ -68,7 +67,7 @@ inline void dfct_CH(grid3D* d, grid3D* u, grid3D* f,double dt, double h){
         -8*((*u)(i1,j,k)+(*u)(i_1,j,k)+(*u)(i,j1,k)+(*u)(i,j_1,k))
         +2*((*u)(i1,j1,k)+(*u)(i_1,j_1,k)+(*u)(i1,j_1,k)+(*u)(i_1,j1,k))
         +((*u)(i2,j,k)+(*u)(i_2,j,k)+(*u)(i,j2,k)+(*u)(i,j_2,k)))
-      -2*laplacian(*u));
+      -2*u->laplacian(i,j,k,h));
   }
 }
 //-----------------------------------------------------------------------------
@@ -83,7 +82,7 @@ inline void f_CH(grid3D* f, grid3D* u, double dt, double h){
   u_cubed.periodicBoundary();
 
   gridLoop3D(*f){
-    (*f)(i,j,k)=dt*(laplacian(u_cubed)-3*laplacian(*u))+(*u)(i,j,k);
+    (*f)(i,j,k)=dt*(u_cubed.laplacian(i,j,k,h)-3*u->laplacian(i,j,k,h))+(*u)(i,j,k);
   }
 }
 //-----------------------------------------------------------------------------

@@ -8,9 +8,9 @@ using namespace std;
 int main(int argc, char **argv){
   int Nx=129,Ny=129;
   double h=1;
-  double dt=.1;
-  int iterations=1000;
-  int outputEvery=100;
+  double dt=1;
+  int iterations=100;
+  int outputEvery=10;
 
   char* filename;
   grid3D* initial_condition;
@@ -66,7 +66,7 @@ int main(int argc, char **argv){
     //gaussian_elimination(&L,u,f);
 
     //multigrid
-    while(multigrid(&L,u,f,d,e,dt,h,6)>1.e-5);
+    while(multigrid(&L,u,f,d,e,dt,h,7)>1.e-5);
   }
 
   //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);

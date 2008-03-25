@@ -12,12 +12,10 @@
 //-----------------------------------------------------------------------------
 #define gridLoop for(int i=0; i<N1; ++i) for (int j=0; j<N2; ++j) for (int k=0; k<N3; ++k)
 #define bndryGridLoop for (int i=-boundary; i<N1+boundary; ++i) for (int j=-boundary; j<N2+boundary; ++j) for (int k=-boundary; k<N3+boundary; ++k)
-#define sq(x) ((x)*(x))
-#define cube(x) ((x)*sq(x))
-#define PI 3.14159265
 
 //-----------------------------------------------------------------------------
-grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal){
+grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
+:N1(n1),N2(n2),N3(n3),boundary(bound){
 
   //Initialize default values for variables
   N1_orig=0;
@@ -27,10 +25,6 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal){
   warned_bndry=0;
   deleted=0;
 
-  N1=n1;
-  N2=n2;
-  N3=n3;
-  boundary=bound;
   coarse=NULL;
   fine=NULL;
 
@@ -40,8 +34,7 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal){
 }
 //This function allows a grid3D object to be read from a file
 //-----------------------------------------------------------------------------
-grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset){
-  boundary=bound;
+grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset):boundary(bound){
   ifstream inFile(file, ios::in);
   inFile >> N1 >> N2 >> N3;
 

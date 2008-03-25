@@ -37,7 +37,7 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Compute mobility, and the inner terms of the cahn-hilliard equation
     gridLoop3D(*phi){
-      insideTerms(i,j,k)=DfDphi((*phi)(i,j,k))-K*laplacian((*phi));
+      insideTerms(i,j,k)=DfDphi((*phi)(i,j,k))-K*phi->laplacian(i,j,k,h);
     }
 
     /* It's necessary to impose boundary conditions on insideTerms, 
@@ -48,7 +48,7 @@ int cahn_hilliard3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Solve the Cahn-Hilliard equation using Forward Euler time-stepping
     gridLoop3D(*phi){
-      double dphidt = laplacian(insideTerms);
+      double dphidt = insideTerms.laplacian(i,j,k,h);
       (*phi)(i,j,k)=(*phi)(i,j,k)+dphidt*dt;
     }
   }
@@ -85,7 +85,7 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 
     //Solve the Allen-Cahn equation using forward euler timestepping
     gridLoop3D(*phi){
-      double dphidt=-(DfDphi((*phi)(i,j,k))-K*laplacian((*phi)));
+      double dphidt=-(DfDphi((*phi)(i,j,k))-K*phi->laplacian(i,j,k,h));
       (*phi)(i,j,k)=(*phi)(i,j,k)+dphidt*dt;
     }
   }
