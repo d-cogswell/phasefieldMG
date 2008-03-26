@@ -96,56 +96,52 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 //levels.   max_levels=2 corresponds to the two grid scheme.
 double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double dt, double h, int max_level, int level){
 
-    //Get the grid dimensions for the current level
-    int Nx=u->getDimension(1);
-    int Ny=u->getDimension(2);
+  //Get the grid dimensions for the current level
+  int Nx=u->getDimension(1);
+  int Ny=u->getDimension(2);
 
-    //Set number of iterations on the fine grid and coarse grid
-    int v1=1;
-    int v2=1;
+  //Set number of iterations on the fine grid and coarse grid
+  int v1=1;
+  int v2=1;
 
-    //Direct solve on the coarsest mesh
-    if (level==max_level){
+  //Presmoothing
+  u->periodicBoundary();
+  for (int i=0;i<v1;++i){
+    GS_LEX_CH(u,f,dt,h);
+  }
 
-      //Only allocate space for L once
-      if (*L==NULL){
-        *L = new grid3D(Nx*Ny,Nx*Ny,1);
-      }
+  //Compute the defect
+  dfct_CH(d,u,f,dt,h);
+
+  //Direct solve on the coarsest mesh
+  if (level==max_level){
+
+    //Only allocate space for L once
+    if (*L==NULL)
+      *L = new grid3D(Nx*Ny,Nx*Ny,1);
 
       L_CH(*L,Nx,Ny,dt,h);
       gaussian_elimination(*L,e,d);
     }
 
-    //Otherwise perform a coarse grid correction
-    else{
+  //Otherwise perform a coarse grid correction
+  else
+    multigrid(L,u->getCoarseGrid(),f->getCoarseGrid(),d->restrict(),e->restrict(),dt,2*h,max_level,level+1);
 
-      //Presmoothing
-      u->periodicBoundary();
-      for (int i=0;i<v1;++i){
-        GS_LEX_CH(u,f,dt,h);
-      }
+  //Prolongate the error to the fine mesh
+  e->getCoarseGrid()->prolongate(Nx,Ny);
 
-      //Compute the defect
-      dfct_CH(d,u,f,dt,h);
+  //Compute the corrected approximation
+  gridLoop3D(*u)
+    (*u)(i,j,k)+=(*e)(i,j,k);
 
-      //solve the defect equation on a coarse mesh
-      multigrid(L,u->getCoarseGrid(),f->getCoarseGrid(),d->restrict(),e->restrict(),dt,2*h,max_level,level+1);
+  //Postsmoothing
+  u->periodicBoundary();
+  for (int i=0;i<v2;++i)
+    GS_LEX_CH(u,f,dt,h);
 
-      //Prolongate the error to the fine mesh
-      e->getCoarseGrid()->prolongate(Nx,Ny);
-
-      //Compute the corrected approximation
-      gridLoop3D(*u)
-        (*u)(i,j,k)+=(*e)(i,j,k);
-
-      //Postsmoothing
-      u->periodicBoundary();
-      for (int i=0;i<v2;++i)
-        GS_LEX_CH(u,f,dt,h);
-    }
-
-    if (level==1)
-      return(d->l2_norm());
+  if (level==1)
+    return(d->l2_norm());
 }
 //-----------------------------------------------------------------------------
 void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){
