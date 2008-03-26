@@ -90,6 +90,8 @@ inline void L_CH(grid3D* L, int Nx, int Ny, double dt, double h){
   //Parameters
   double K=1.5;
 
+  *L=0;
+
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
@@ -147,6 +149,9 @@ inline void dfct_heat_eqn(grid3D* d, grid3D* u, grid3D* f, double dt, double h){
 }
 //-----------------------------------------------------------------------------
 inline void L_heat_eqn(grid3D* L, int Nx, int Ny, double dt, double h){
+
+  *L=0;
+
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;

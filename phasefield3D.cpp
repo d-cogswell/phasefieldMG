@@ -106,10 +106,13 @@ double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double d
 
     //Direct solve on the coarsest mesh
     if (level==max_level){
+
+      //Only allocate space for L once
       if (*L==NULL){
         *L = new grid3D(Nx*Ny,Nx*Ny,1);
-        L_CH(*L,Nx,Ny,dt,h);
       }
+
+      L_CH(*L,Nx,Ny,dt,h);
       gaussian_elimination(*L,e,d);
     }
 
