@@ -96,11 +96,7 @@ int allen_cahn3D(grid3D* phi, double h, int iterations, int outputEvery){
 //levels.   max_levels=2 corresponds to the two grid scheme.
 double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double dt, double h, int max_level, int level){
 
-  //Get the grid dimensions for the current level
-  int Nx=u->getDimension(1);
-  int Ny=u->getDimension(2);
-
-  //Set number of iterations on the fine grid and coarse grid
+  //Set number of pre and post smoothing iterations
   int v1=1;
   int v2=1;
 
@@ -110,26 +106,32 @@ double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double d
     GS_LEX_CH(u,f,dt,h);
   }
 
-  //Compute the defect
+  //Compute the defect and restrict it
   dfct_CH(d,u,f,dt,h);
+  grid3D* d2h=d->restrict();
+  grid3D* e2h=e->getCoarseGrid();
 
   //Direct solve on the coarsest mesh
-  if (level==max_level){
+  if (level==max_level-1){
+
+     //Get the grid dimensions for the current level
+    int Nx=e2h->getDimension(1);
+    int Ny=e2h->getDimension(2);
 
     //Only allocate space for L once
     if (*L==NULL)
       *L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-      L_CH(*L,Nx,Ny,dt,h);
-      gaussian_elimination(*L,e,d);
-    }
+    L_CH(*L,Nx,Ny,dt,2*h);
+    gaussian_elimination(*L,e2h,d2h);
+  }
 
   //Otherwise perform a coarse grid correction
   else
-    multigrid(L,u->getCoarseGrid(),f->getCoarseGrid(),d->restrict(),e->restrict(),dt,2*h,max_level,level+1);
+    multigrid(L,u->getCoarseGrid(),f->getCoarseGrid(),d2h,e2h,dt,2*h,max_level,level+1);
 
   //Prolongate the error to the fine mesh
-  e->getCoarseGrid()->prolongate(Nx,Ny);
+  e2h->prolongate(e->getDimension(1),e->getDimension(2));
 
   //Compute the corrected approximation
   gridLoop3D(*u)
