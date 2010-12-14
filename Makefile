@@ -16,4 +16,4 @@ lib%.a: %.o
 	ranlib $@
 
 clean:
-	rm $(TARGET) *.o *.a output/*
+	rm $(TARGET) *.o *.a
