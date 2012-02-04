@@ -1,23 +1,9 @@
-#ifndef _PHASEFIELD3D_H_
-#define _PHASEFIELD3D_H_
+#ifndef _PHASEFIELD3DMG_H_
+#define _PHASEFIELD3DMG_H_
 
-#include <iostream>
 #include <Magick++.h>
 #include "grid3D.h"
-using namespace std;
 using namespace Magick;
-
-//Boundary layers
-//-----------------------------------------------------------------------------
-#define bc 1
-
-//Energy density function
-//-----------------------------------------------------------------------------
-/*I use the energy density function of Eggleston, McFadden, Voorhees:
-   f(c)=1/4*W*c^2(1-c)^2 */
-//#define DfDphi(phi) (4*(cube(phi) - 1.5*sq(phi) + .5*phi))
-#define DfDphi(phi) (cube(phi)-phi)
-
 
 //Function definitions
 //-----------------------------------------------------------------------------
@@ -25,8 +11,6 @@ inline double clip(double n, double low, double high){
   return(n<low ? low : (n>high ? high : n));
 }
 
-int cahn_hilliard3D(grid3D*,double,int,int);
-int allen_cahn3D(grid3D*,double,int,int);
 double multigrid(grid3D**,grid3D*,grid3D*,grid3D*,grid3D*,double,double,int=2,int=1);
 void gaussian_elimination(grid3D*,grid3D*,grid3D*);
 

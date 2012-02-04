@@ -1,7 +1,7 @@
 #include <iostream>
 #include <unistd.h>
 #include "grid3D.h"
-#include "phasefield3D.h"
+#include "phasefield3DMG.h"
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -69,8 +69,6 @@ int main(int argc, char **argv){
     while(multigrid(&L,u,f,d,e,dt,h,7)>1.e-5);
   }
 
-  //cahn_hilliard3D(initial_condition,h,iterations,outputEvery);
-  //allen_cahn3D(initial_condition,h,iterations,outputEvery);
   delete initial_condition,L,f;
   return 0;
 }
