@@ -66,7 +66,7 @@ int main(int argc, char **argv){
     //gaussian_elimination(&L,u,f);
 
     //multigrid
-    while(multigrid(&L,u,f,d,e,dt,h,7)>1.e-5);
+    while(multigrid(&L,u,f,d,e,dt,h,6)>1.e-3);
   }
 
   delete initial_condition,L,f;

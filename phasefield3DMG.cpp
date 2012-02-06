@@ -6,11 +6,10 @@
 double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double dt, double h, int max_level, int level){
 
   //Set number of pre and post smoothing iterations
-  int v1=1;
-  int v2=1;
+  int v1=4;
+  int v2=4;
 
   //Presmoothing
-  u->periodicBoundary();
   for (int i=0;i<v1;++i){
     GS_LEX_CH(u,f,dt,h);
   }
@@ -47,12 +46,13 @@ double multigrid(grid3D** L, grid3D* u, grid3D* f,grid3D* d, grid3D* e, double d
     (*u)(i,j,k)+=(*e)(i,j,k);
 
   //Postsmoothing
-  u->periodicBoundary();
   for (int i=0;i<v2;++i)
     GS_LEX_CH(u,f,dt,h);
 
-  if (level==1)
+  if (level==1){
+    dfct_CH(d,u,f,dt,h);
     return(d->l2_norm());
+  }
 }
 //-----------------------------------------------------------------------------
 void gaussian_elimination(grid3D* L, grid3D* u, grid3D* f){

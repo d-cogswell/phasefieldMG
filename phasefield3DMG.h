@@ -20,6 +20,7 @@ inline void GS_LEX_CH(grid3D* u, grid3D* f, double dt, double h){
   //Parameters
   double K=1.5;
 
+  u->periodicBoundary();
   int Nx=u->getDimension(1);
   int Ny=u->getDimension(2);
 
@@ -35,6 +36,7 @@ inline void GS_LEX_CH(grid3D* u, grid3D* f, double dt, double h){
       -2/sq(h)*((*u)(i1,j,k)+(*u)(i_1,j,k)+(*u)(i,j1,k)+(*u)(i,j_1,k))
       )+(*f)(i,j,k))/D;
   }
+  u->periodicBoundary();  
 }
 //-----------------------------------------------------------------------------
 inline void dfct_CH(grid3D* d, grid3D* u, grid3D* f,double dt, double h){
@@ -120,10 +122,12 @@ inline void L_CH(grid3D* L, int Nx, int Ny, double dt, double h){
 
 //-----------------------------------------------------------------------------
 inline void GS_LEX_heat_eqn(grid3D* u, grid3D* f, double dt, double h){
+  u->periodicBoundary();
   double D=2*sq(h)+4*dt;
   gridLoop3D(*u){
     (*u)(i,j,k)=(dt*((*u)(i+1,j,k)+(*u)(i-1,j,k)+(*u)(i,j+1,k)+(*u)(i,j-1,k))+(*f)(i,j,k))/D;
   }
+  u->periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 inline void dfct_heat_eqn(grid3D* d, grid3D* u, grid3D* f, double dt, double h){
