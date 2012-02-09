@@ -321,13 +321,7 @@ grid3D* grid3D::restrict(){
   }
 
   gridLoop3D(*coarse){
-    //(*coarse)(i,j,k)=(*this)(2*i,2*j,0);
-    (*coarse)(i,j,k)=1./16.*(4*(*this)(2*i,2*j,0)
-     +2*(*this)(2*i+1,2*j,0)+2*(*this)(2*i-1,2*j,0)
-     +2*(*this)(2*i,2*j+1,0)+2*(*this)(2*i,2*j-1,0)
-     +(*this)(2*i+1,2*j+1,0)+(*this)(2*i-1,2*j-1,0)
-     +(*this)(2*i+1,2*j-1,0)+(*this)(2*i-1,2*j+1,0));
-
+    (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
   }
   return(coarse);
 }

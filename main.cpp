@@ -34,9 +34,8 @@ int main(int argc, char **argv){
   }
 
   initial_condition->initializeGaussian(.01);
-  grid3D* f = new grid3D(Nx,Ny,1);
-  grid3D* d = new grid3D(Nx,Ny,1);
-  grid3D* e = new grid3D(Nx,Ny,1);
+  grid3D f(Nx,Ny,1), d(Nx,Ny,1);
+  grid3D e(Nx,Ny,1);
   grid3D* u = initial_condition;
   grid3D* L = NULL;
 
@@ -58,17 +57,14 @@ int main(int argc, char **argv){
 
     //Create f
     u->periodicBoundary();
-    f_CH(f,u,dt,h);
-
-    //Direct solve
-    //grid3D L(Nx*Ny,Nx*Ny,1);
-    //L_CH(&L,Nx,Ny,dt,h);
-    //gaussian_elimination(&L,u,f);
+    f_CH(f,*u,dt,h);
 
     //multigrid
-    while(multigrid(&L,u,f,d,e,dt,h,6)>1.e-3);
+    if (t<iterations){
+      while(multigrid(L,*u,f,d,e,dt,h,6)>1.e-3);
+    }
   }
 
-  delete initial_condition,L,f;
+  delete initial_condition,L;
   return 0;
 }
