@@ -165,14 +165,14 @@ double grid3D::squaredSum(int x1, int x2, int y1, int y2, int z1, int z2,
 
   if ((x1>x2 || y1>y2 || z1>z2) && !warned_range){
     warned_range=1;
-    cout << "Warning: Range Error in squaredSum()" << endl;
+    printf("Warning: Range Error in squaredSum()!\n");
   }
   else if ((x1<0 || x2>N1 || y1<0 || y2>N2 || z1<0 || z2>N3) && !warned_bndry){
     warned_bndry=1;
-    cout << "x: " << x1 << " " << x2 << endl;
-    cout << "y: " << y1 << " " << y2 << endl;
-    cout << "z: " << z1 << " " << z2 << endl;
-    cout << "Warning: computing on boundary values in meanSquareSum()" << endl;
+    printf("x: %i %i\n",x1,x2);
+    printf("y: %i %i\n",y1,y2);
+    printf("z: %i %i\n",z1,z2);
+    printf("Warning: computing on boundary values in meanSquareSum()!\n");
   }
   
   if (gridpts)
@@ -223,72 +223,121 @@ void grid3D::zAxisPeriodicBoundary(int ext1, int ext2){
 }
 //-----------------------------------------------------------------------------
 void grid3D::xAxisNeumannBoundary(double nh, int ext1, int ext2){
-  for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
-    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-      (*this)(-1,j,k)=(*this)(1,j,k)-2*nh;
-      (*this)(N1,j,k)=2*nh+(*this)(N1-2,j,k);
-    }
+
+  //If the dimension in this direction is 1, set periodic boundaries instead
+  if (N1==1)
+    xAxisPeriodicBoundary();
+  else{
+    for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
+      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+        (*this)(-1,j,k)=(*this)(1,j,k)-2*nh;
+        (*this)(N1,j,k)=2*nh+(*this)(N1-2,j,k);
+      }
+  }
 }
 
 void grid3D::yAxisNeumannBoundary(double nh, int ext1, int ext2){
-  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-      (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
-      (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
-    }
+
+  //If the dimension in this direction is 1, set periodic boundaries instead
+  if (N2==1)
+    yAxisPeriodicBoundary();
+  else{
+    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+        (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
+        (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
+      }
+  }
 }
 
 void grid3D::neg_yAxisNeumannBoundary(double nh, int ext1, int ext2){
-  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-      (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
+
+  //If the dimension in this direction is 1, set periodic boundaries instead
+  if (N2==1)
+    xAxisPeriodicBoundary();
+  else{
+    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+        (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
     }
+  }
 }
 
 void grid3D::pos_yAxisNeumannBoundary(double nh, int ext1, int ext2){
-  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-      (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
-    }
+
+  //If the dimension in this direction is 1, set periodic boundaries instead
+  if (N2==1)
+    xAxisPeriodicBoundary();
+  else{
+    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+        (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
+      }
+  }
 }
 
 void grid3D::zAxisNeumannBoundary(double nh, int ext1, int ext2){
-  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-    for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
-      (*this)(i,j,-1)=(*this)(i,j,1)-2*nh;
-      (*this)(i,j,N3)=2*nh+(*this)(i,j,N3-2);
+
+  //If the dimension in this direction is 1, set periodic boundaries instead
+  if (N3==1)
+    zAxisPeriodicBoundary();
+  else{
+    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+      for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
+        (*this)(i,j,-1)=(*this)(i,j,1)-2*nh;
+        (*this)(i,j,N3)=2*nh+(*this)(i,j,N3-2);
+    }
+  }
+}
+
+void grid3D::neumannBoundary(double nh){
+  xAxisNeumannBoundary(nh);
+  yAxisNeumannBoundary(nh);
+  zAxisNeumannBoundary(nh);
+}
+//-----------------------------------------------------------------------------
+void grid3D::xAxisDirichletBoundary(double c, int ext1, int ext2){
+  for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(-1,j,k)=c;
+      (*this)(N1,j,k)=c;
     }
 }
 
-
-void grid3D::neumannBoundary(void){
-  cout << "Neumann boundary not implmented!" << endl;
- /*
-  for (int i=0; i<N1; i++){
-    (*this)(i,-1)=(*this)(i,1);
-    (*this)(i,N2)=(*this)(i,N2-2);
-  }
-  
-  for (int j=0; j<N2; j++){
-    (*this)(-1,j)=(*this)(1,j);
-    (*this)(N1,j)=(*this)(N1-2,j);
-  }
-  */
+void grid3D::yAxisDirichletBoundary(double c, int ext1, int ext2){
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(i,-1,k)=c;
+      (*this)(i,N2,k)=c;
+    }
 }
-//-----------------------------------------------------------------------------
-void grid3D::dirichletBoundary(void){
-  cout << "Dirichlet boundary not implmented!" << endl;
-  /*
-  for (int i=0; i<N1; i++){
-    (*this)(i,-1)=0;
-    (*this)(i,N2)=0;
-  }
 
-  for (int j=0; j<N2; j++){
-    (*this)(-1,j)=0;
-    (*this)(N1,j)=0;
+void grid3D::neg_yAxisDirichletBoundary(double c, int ext1, int ext2){
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(i,-1,k)=c;
   }
-  */
+}
+
+void grid3D::pos_yAxisDirichletBoundary(double c, int ext1, int ext2){
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(i,N2,k)=c;
+    }
+}
+
+void grid3D::zAxisDirichletBoundary(double c, int ext1, int ext2){
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
+      (*this)(i,j,-1)=c;
+      (*this)(i,j,N3)=c;
+    }
+}
+
+void grid3D::dirichletBoundary(double c){
+  xAxisDirichletBoundary(c);
+  yAxisDirichletBoundary(c);
+  zAxisDirichletBoundary(c);
 }
 //-----------------------------------------------------------------------------
 //Function to perform prolongation by interpolation
