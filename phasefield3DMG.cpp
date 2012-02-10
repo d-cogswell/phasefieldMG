@@ -44,6 +44,24 @@ void dfct_CH(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
   }
 }
 //-----------------------------------------------------------------------------
+void d_plus_Lu_CH(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
+  //Parameters
+  double K=1.5;
+
+  int Nx=f.getDimension(1);
+  int Ny=f.getDimension(2);
+  gridLoop3D(f){
+    int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
+    int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
+    f(i,j,k)=d(i,j,k)+u(i,j,k)+dt*(
+      K/(h*h*h*h)*(20*u(i,j,k)
+        -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
+        +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
+        +(u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k)))
+      -2*u.laplacian(i,j,k,h));
+  }
+}
+//-----------------------------------------------------------------------------
 void f_CH(grid3D& f, grid3D& u, double dt, double h){
   int Nx=u.getDimension(1);
   int Ny=u.getDimension(2);
@@ -121,6 +139,13 @@ void GS_LEX_heat_eqn(grid3D& u, grid3D& f, double dt, double h){
 void dfct_heat_eqn(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
   gridLoop3D(d){
     d(i,j,k)=f(i,j,k)-(2*sq(h)+4*dt)*u(i,j,k)+dt*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k));
+  }
+}
+//-----------------------------------------------------------------------------
+void d_plus_Lu_heat_eqn(grid3D& f, grid3D& d, grid3D& u,double dt, double h){
+  u.periodicBoundary();
+  gridLoop3D(f){
+    f(i,j,k)=d(i,j,k)+(2*sq(h)+4*dt)*u(i,j,k)-dt*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k));
   }
 }
 //-----------------------------------------------------------------------------
