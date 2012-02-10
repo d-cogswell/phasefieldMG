@@ -1,7 +1,6 @@
 #include <iostream>
 #include <unistd.h>
-#include "grid3D.h"
-#include "phasefield3DMG.h"
+#include "multigrid3D.h"
 using namespace std;
 
 //-----------------------------------------------------------------------------
