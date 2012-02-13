@@ -15,7 +15,7 @@ void GS_LEX_AC(grid3D&, grid3D&, double, double);
 void dfct_AC(grid3D&, grid3D&, grid3D&, double, double);
 void d_plus_Nu_AC(grid3D&, grid3D&, grid3D&, double, double);
 void f_AC(grid3D&, grid3D&, double, double);
-void L_AC(grid3D&, int, int, double, double);
+void L_AC(grid3D&, grid3D&, int, int, double, double);
 
 void GS_LEX_CH(grid3D&, grid3D&, double, double);
 void dfct_CH(grid3D&, grid3D&, grid3D&, double, double);

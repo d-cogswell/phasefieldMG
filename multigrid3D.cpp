@@ -64,10 +64,10 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
 
   //Presmoothing
   for (int i=0;i<v1;++i)
-    GS_LEX_CH(u,f,dt,h);
+    GS_LEX_AC(u,f,dt,h);
 
   //Compute the defect
-  dfct_CH(d,u,f,dt,h);
+  dfct_AC(d,u,f,dt,h);
 
   //Restrict the defect and smoothed u
   grid3D& d2h=*d.restrict();
@@ -76,7 +76,7 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
   //Compute the RHS
   grid3D& f2h=*f.getCoarseGrid();
   grid3D& e2h=*e.getCoarseGrid();
-  d_plus_Lu_CH(f2h,d2h,u2h,dt,2*h);
+  d_plus_Nu_AC(f2h,d2h,u2h,dt,2*h);
 
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
@@ -89,7 +89,7 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
     if (L==NULL)
       L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_CH(*L,Nx,Ny,dt,2*h);
+    L_AC(*L,u2h,Nx,Ny,dt,2*h);
     gaussian_elimination(*L,e2h,f2h);
 	
     //Compute the correction and prolongate to the fine mesh
@@ -109,10 +109,10 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
 
   //Postsmoothing
   for (int i=0;i<v2;++i)
-    GS_LEX_CH(u,f,dt,h);
+    GS_LEX_AC(u,f,dt,h);
 
   if (level==1){
-    dfct_CH(d,u,f,dt,h);
+    dfct_AC(d,u,f,dt,h);
     return(d.l2_norm());
   }
 }

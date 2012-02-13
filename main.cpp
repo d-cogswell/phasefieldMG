@@ -44,7 +44,7 @@ int main(int argc, char **argv){
     //Write output, if necessary
     char outFile[128];
     if (!(t%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.png",t);
+      sprintf(outFile,"output/p%6.6i.jpg",t);
       cout << "writing output: " << outFile << endl;
       gridLoop3D(*u){
         double val=(1+(*u)(i,j,0))/2;
@@ -56,7 +56,7 @@ int main(int argc, char **argv){
 
     //Create f
     u->periodicBoundary();
-    f_CH(f,*u,dt,h);
+    f_AC(f,*u,dt,h);
 
     //multigrid
     if (t<iterations){

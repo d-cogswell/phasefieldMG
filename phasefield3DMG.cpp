@@ -2,49 +2,57 @@
 
 #define kappa 1.5
 /*The following functions solve the Allen-Cahn equation using a semi-implicit
- *splitting.*///-----------------------------------------------------------------------------
+ *splitting.*/
+//-----------------------------------------------------------------------------
 double dfdc(double c){
   return(c*(c*c-1));
+}
+
+double d2fdc2(double c){
+  return(3*c*c-1);
 }
 //-----------------------------------------------------------------------------
 void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
   double D=dt*kappa/(h*h);
   u.periodicBoundary();
   gridLoop3D(u){
-    u(i,j,k)=(f(i,j,k)+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(1+4*D);
+    //u(i,j,k)=(f(i,j,k)+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(1+dt*d2fdc2(u(i,j,k))+4*D); //BDF
+    u(i,j,k)=(f(i,j,k)+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(2+dt*d2fdc2(u(i,j,k))+4*D);
   }
   u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 void dfct_AC(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
-  double D=dt*kappa/(h*h);
   gridLoop3D(d){
-    d(i,j,k)=f(i,j,k)-(u(i,j,k)*(1+4*D)-D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)));
+	//d(i,j,k)=f(i,j,k)-(u(i,j,k)*(1+dt*d2fdc2(u(i,j,k)))-dt*kappa*u.laplacian(i,j,k,h)); //BDF
+	d(i,j,k)=f(i,j,k)-(u(i,j,k)*(2+dt*d2fdc2(u(i,j,k)))-dt*kappa*u.laplacian(i,j,k,h));
   }
 }
 //-----------------------------------------------------------------------------
 void d_plus_Nu_AC(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
-  double D=dt*kappa/(h*h);
   u.periodicBoundary();
   gridLoop3D(f){
-    f(i,j,k)=d(i,j,k)+u(i,j,k)-D*u.laplacian(i,j,k,h);
+	//f(i,j,k)=d(i,j,k)+u(i,j,k)*(1+dt*d2fdc2(u(i,j,k)))-dt*kappa*u.laplacian(i,j,k,h); //BDF
+	f(i,j,k)=d(i,j,k)+u(i,j,k)*(2+dt*d2fdc2(u(i,j,k)))-dt*kappa*u.laplacian(i,j,k,h);
   }
 }
 //-----------------------------------------------------------------------------
 void f_AC(grid3D& f, grid3D& u, double dt, double h){
   gridLoop3D(f){
-    f(i,j,k)=u(i,j,k)-dt*dfdc(u(i,j,k));
+	//f(i,j,k)=u(i,j,k)*(1+dt*d2fdc2(u(i,j,k)))-dt*dfdc(u(i,j,k)); //BDF
+	f(i,j,k)=u(i,j,k)*(2+dt*d2fdc2(u(i,j,k)))-2*dt*dfdc(u(i,j,k))+dt*kappa*u.laplacian(i,j,k,h);
   }
 }
 //-----------------------------------------------------------------------------
-void L_AC(grid3D& L, int Nx, int Ny, double dt, double h){
+void L_AC(grid3D& L, grid3D& u, int Nx, int Ny, double dt, double h){
   double D=dt*kappa/(h*h);
   L=0;
 
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      L(row,row,0)+=1+4*D;
+      //L(row,row,0)+=1+dt*d2fdc2(u(i,j,0))+4*D; //BDF
+      L(row,row,0)+=2+dt*d2fdc2(u(i,j,0))+4*D;
       L(row,j*Nx+(i+1)%Nx,0)+=-D;
       L(row,j*Nx+(i+Nx-1)%Nx,0)+=-D;
       L(row,((j+1)%Ny)*Nx+i,0)+=-D;
