@@ -60,7 +60,7 @@ int main(int argc, char **argv){
 
     //multigrid
     if (t<iterations){
-      while(FAS_multigrid(L,*u,f,d,e,dt,h,6)>1.e-3);
+      while(FAS_multigrid(L,*u,f,d,e,dt,h,5)>1.e-3);
     }
   }
 
