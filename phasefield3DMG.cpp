@@ -29,7 +29,7 @@ void dfct_AC(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
   }
 }
 //-----------------------------------------------------------------------------
-void d_plus_Nu_AC(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
+void d_plus_Nu_AC(grid3D& f, grid3D& d, grid3D& u,double dt, double h){
   u.periodicBoundary();
   gridLoop3D(f){
 	//f(i,j,k)=d(i,j,k)+u(i,j,k)*(1+dt*d2fdc2(u(i,j,k)))-dt*kappa*u.laplacian(i,j,k,h); //BDF
@@ -104,7 +104,7 @@ void dfct_CH(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
   }
 }
 //-----------------------------------------------------------------------------
-void d_plus_Nu_CH(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
+void d_plus_Nu_CH(grid3D& f, grid3D& d, grid3D& u, double dt, double h){
   //Parameters
   double K=1.5;
 
