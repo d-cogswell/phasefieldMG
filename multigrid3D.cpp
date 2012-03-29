@@ -91,15 +91,17 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
 
     L_AC(*L,u2h,Nx,Ny,dt,2*h);
     gaussian_elimination(*L,e2h,f2h);
+
+    //Compute the coarse grid correction
+    gridLoop3D(e2h)
+      e2h(i,j,k)-=u2h(i,j,k);
   }
 
   //Otherwise perform a coarse grid correction
   else
     FAS_multigrid(L,u2h,f2h,d2h,e2h,dt,2*h,max_level,level+1);
 
-  //Compute the correction and prolongate to the fine mesh
-  gridLoop3D(e2h)
-    e2h(i,j,k)-=u2h(i,j,k);
+  //Prolongate the error to the fine mesh
   e2h.prolongate(e.getDimension(1),e.getDimension(2));
 
   //Compute the corrected approximation
