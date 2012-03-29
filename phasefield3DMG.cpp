@@ -110,6 +110,7 @@ void d_plus_Nu_CH(grid3D& f, grid3D& d, grid3D& u, double dt, double h){
 
   int Nx=f.getDimension(1);
   int Ny=f.getDimension(2);
+  u.periodicBoundary();
   gridLoop3D(f){
     int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
     int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
