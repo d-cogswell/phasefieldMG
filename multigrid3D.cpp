@@ -89,7 +89,7 @@ double FAS_multigrid(grid3D* L, grid3D& u, grid3D& f, grid3D& d, grid3D& e, doub
     if (L==NULL)
       L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_AC(*L,u2h,Nx,Ny,dt,2*h);
+    L_AC(*L,u2h,f2h,Nx,Ny,dt,2*h);
     gaussian_elimination(*L,e2h,f2h);
 
     //Compute the coarse grid correction
