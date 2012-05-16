@@ -52,7 +52,7 @@ class grid3D{
   void periodicBoundary(void);
   void neumannBoundary(double);
   void dirichletBoundary(double);
-  grid3D* prolongate(int,int);
+  grid3D* prolongate(int,int,int=1);
   grid3D* restrict();
   grid3D* getCoarseGrid();
   double l2_norm();

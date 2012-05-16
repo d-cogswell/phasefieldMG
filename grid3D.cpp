@@ -343,19 +343,22 @@ void grid3D::dirichletBoundary(double c){
 //Function to perform prolongation by interpolation
 //Dimensions for the fine matrix must be provided - they can't be determined
 //from the size of the coarse matrix
-grid3D* grid3D::prolongate(int Nx, int Ny){
+grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   if (fine==NULL){
-    fine=new grid3D(Nx,Ny,1);
+    fine=new grid3D(Nx,Ny,Nz);
     fine->coarse=this;
   }
 
-  for (int i=0; i<N1; ++i)
-    for (int j=0; j<N2; ++j){
-      (*fine)(2*i,2*j,0)=(*this)(i,j,0);
-      (*fine)(2*i+1,2*j,0)=(*this)(i+.5,(double)j,0.);
-      (*fine)(2*i,2*j+1,0)=(*this)((double)i,j+.5,0.);
-      (*fine)(2*i+1,2*j+1,0)=(*this)(i+.5,j+.5,0.);
-    }
+  gridLoop{  
+    (*fine)(2*i,2*j,2*k)=(*this)(i,j,k);
+    (*fine)(2*i+1,2*j,2*k)=(*this)(i+.5,(double)j,(double)k);
+    (*fine)(2*i,2*j+1,2*k)=(*this)((double)i,j+.5,(double)k);
+    (*fine)(2*i,2*j,2*k+1)=(*this)((double)i,(double)j,k+.5);
+    (*fine)(2*i+1,2*j+1,2*k)=(*this)(i+.5,j+.5,(double)k);
+    (*fine)(2*i+1,2*j,2*k+1)=(*this)(i+.5,(double)j,k+.5);
+    (*fine)(2*i,2*j+1,2*k+1)=(*this)((double)i,j+.5,k+.5);
+    (*fine)(2*i+1,2*j+1,2*k+1)=(*this)(i+.5,j+.5,k+.5);
+  }
   return(fine);
 }
 //-----------------------------------------------------------------------------
@@ -364,13 +367,14 @@ grid3D* grid3D::restrict(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
+    int N2z=(N3+1)/2;
 
-    coarse=new grid3D(N2x,N2y,1);
+    coarse=new grid3D(N2x,N2y,N2z);
     coarse->fine=this;
   }
 
   gridLoop3D(*coarse){
-    (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
+    (*coarse)(i,j,k)=(*this)(2*i,2*j,2*k);
   }
   return(coarse);
 }
@@ -379,7 +383,8 @@ grid3D* grid3D::getCoarseGrid(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
-    coarse=new grid3D(N2x,N2y,1);
+    int N2z=(N3+1)/2;
+    coarse=new grid3D(N2x,N2y,N2z);
     coarse->fine=this;
   }
   return(coarse);
@@ -387,9 +392,8 @@ grid3D* grid3D::getCoarseGrid(){
 //-----------------------------------------------------------------------------
 double grid3D::l2_norm(){
   double sum=0;
-  for (int j=0; j<N2; ++j){
-    for (int i=0; i<N1; ++i)
-      sum += sq((*this)(i,j,0));
+  gridLoop{
+      sum += sq((*this)(i,j,k));
   }
   return(sqrt(sum));
 }
