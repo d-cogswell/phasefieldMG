@@ -18,7 +18,7 @@ void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
   gridLoop3D(u){
 
     //Crank-Nicolson
-	u(i,j,k)=(f(i,j,k)-dt*dfdc(u(i,j,k))+u(i,j,k)*d2fdc2(u(i,j,k))+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(2+dt*d2fdc2(u(i,j,k))+4*D);
+	u(i,j,k)=(f(i,j,k)-dt*dfdc(u(i,j,k))+dt*u(i,j,k)*d2fdc2(u(i,j,k))+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(2+dt*d2fdc2(u(i,j,k))+4*D);
   }
   u.periodicBoundary();
 }
