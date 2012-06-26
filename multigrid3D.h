@@ -53,8 +53,7 @@ double multigrid(grid3D* L, system& u, system& f, system& d, system& e, double d
   e2h.prolongate(e.getDimension(1),e.getDimension(2));
 
   //Compute the corrected approximation
-  gridLoop3D(u)
-    u(i,j,k)+=e(i,j,k);
+  u+=e;
 
   //Postsmoothing
   for (int i=0;i<v2;++i)
@@ -106,8 +105,7 @@ double FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& e, doub
     gaussian_elimination(*L,e2h,f2h);
 
     //Compute the coarse grid correction
-    gridLoop3D(e2h)
-      e2h(i,j,k)-=u2h(i,j,k);
+    e2h-=u2h;
   }
 
   //Otherwise perform a coarse grid correction
@@ -118,8 +116,7 @@ double FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& e, doub
   e2h.prolongate(e.getDimension(1),e.getDimension(2));
 
   //Compute the corrected approximation
-  gridLoop3D(u)
-    u(i,j,k)+=e(i,j,k);
+  u+=e;
 
   //Postsmoothing
   for (int i=0;i<v2;++i)

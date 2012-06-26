@@ -533,6 +533,18 @@ void grid3D::operator=(grid3D grid){
   }
 }
 //-----------------------------------------------------------------------------
+void grid3D::operator+=(grid3D grid){
+  bndryGridLoop{
+    (*this)(i,j,k)+=grid(i,j,k);
+  }
+}
+//-----------------------------------------------------------------------------
+void grid3D::operator-=(grid3D grid){
+  bndryGridLoop{
+    (*this)(i,j,k)-=grid(i,j,k);
+  }
+}
+//-----------------------------------------------------------------------------
 void grid3D::allocate(int N1, int N2, int N3, int boundary){
   int n1=N1+2*boundary;
   int n2=N2+2*boundary;
