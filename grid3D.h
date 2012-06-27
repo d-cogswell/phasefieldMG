@@ -78,9 +78,9 @@ class grid3D{
   inline double laplacian(int i, int j, int k,double h) {return(DXX(i,j,k,h)+DYY(i,j,k,h)+DZZ(i,j,k,h));}
 
   void operator=(const double);
-  void operator=(grid3D);
-  void operator+=(grid3D);
-  void operator-=(grid3D);
+  void operator=(grid3D&);
+  void operator+=(grid3D&);
+  void operator-=(grid3D&);
   grid3D *coarse, *fine;
 
  protected:

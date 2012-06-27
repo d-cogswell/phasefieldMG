@@ -527,19 +527,19 @@ void grid3D::operator=(const double value){
   }
 }
 //-----------------------------------------------------------------------------
-void grid3D::operator=(grid3D grid){
+void grid3D::operator=(grid3D& grid){
   bndryGridLoop{
     (*this)(i,j,k)=grid(i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
-void grid3D::operator+=(grid3D grid){
+void grid3D::operator+=(grid3D& grid){
   bndryGridLoop{
     (*this)(i,j,k)+=grid(i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
-void grid3D::operator-=(grid3D grid){
+void grid3D::operator-=(grid3D& grid){
   bndryGridLoop{
     (*this)(i,j,k)-=grid(i,j,k);
   }
