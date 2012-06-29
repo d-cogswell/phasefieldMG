@@ -1,7 +1,4 @@
-#include <iostream>
-#include <unistd.h>
 #include "multigrid3D.h"
-using namespace std;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -28,7 +25,7 @@ int main(int argc, char **argv){
     }
 
   if (!inputFileSupplied){
-    cout << "No input file supplied!" << endl;
+    printf("No input file supplied!\n");
     initial_condition = new grid3D(Nx,Ny,1);
   }
 
@@ -45,7 +42,7 @@ int main(int argc, char **argv){
     char outFile[128];
     if (!(t%outputEvery)){
       sprintf(outFile,"output/p%6.6i.jpg",t);
-      cout << "writing output: " << outFile << endl;
+      printf("writing output: %s\n", outFile);
       gridLoop3D(*u){
         double val=(1+(*u)(i,j,0))/2;
         val=MaxRGB*clip(val,0,1);
