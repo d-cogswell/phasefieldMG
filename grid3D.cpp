@@ -23,7 +23,6 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
   N3_orig=0;
   warned_range=0;
   warned_bndry=0;
-  deleted=0;
 
   coarse=NULL;
   fine=NULL;
@@ -45,7 +44,6 @@ grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc,
 
   coarse=NULL;
   fine=NULL;
-  deleted=0;
 
   allocate(N1,N2,N3,boundary);
   (*this)=initialVal;
@@ -74,34 +72,25 @@ grid3D::grid3D(const grid3D& grid){
   boundary=grid.boundary;
   *coarse=*grid.coarse;
   *fine=*grid.fine;
-  deleted=0;
 
   //Allocate space for the grid
   allocate(N1,N2,N3,boundary);
 }
 //-----------------------------------------------------------------------------
 grid3D::~grid3D(void){
-
-  deleted=1;
-
-  if (N1 && N2 && N3){
   for (int i=0; i<N1+2*boundary; ++i){
     for (int j=0; j<N2+2*boundary; ++j)
       delete [] grid[i][j];
     delete [] grid[i];
   }
-  }
   delete [] grid;
 
   //Delete coarse and fine grids if they've been allocated
-  if (coarse!=NULL){
-    if (!coarse->deleted)
-      delete coarse;
-  }
-  if (fine!=NULL){
-    if (!fine->deleted)
-      delete fine;
-  }
+  if (!coarse)
+    delete coarse;
+
+  if (!fine)
+    delete fine;
 }
 
 //-----------------------------------------------------------------------------
