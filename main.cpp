@@ -54,10 +54,23 @@ int main(int argc, char **argv){
     //Create f
     u->periodicBoundary();
     f_AC(f,*u,dt,h);
+    
+    double error=1;
+    double error_old=NULL;
 
     //multigrid
     if (t<iterations){
-      while(FAS_multigrid<grid3D>(L,*u,f,d,e,dt,h,5)>1.e-3);
+      while (error>1.e-3){
+        FAS_multigrid<grid3D>(L,*u,f,d,e,dt,h,6);
+        dfct_AC(d,*u,f,dt,h);
+        error=d.l2_norm();
+	  
+        if (error_old && error>=error_old){
+          printf("error not decreasing!\n");
+          exit(1);
+        }
+        error_old=error;
+      }
     }
   }
 
