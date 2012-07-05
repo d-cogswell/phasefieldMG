@@ -31,10 +31,9 @@ int main(int argc, char **argv){
 
   initial_condition->initializeGaussian(.01);
   grid3D f(Nx,Ny,1), d(Nx,Ny,1);
-  grid3D e(Nx,Ny,1);
   grid3D* u = initial_condition;
   grid3D* L = NULL;
-
+  
   //Performs semi-implicit timestepping
   for (int t=0; t<=iterations; ++t){
 
@@ -53,7 +52,7 @@ int main(int argc, char **argv){
 
     //Create f
     u->periodicBoundary();
-    f_AC(f,*u,dt,h);
+    f_CH(f,*u,dt,h);
     
     double error=1;
     double error_old=NULL;
@@ -61,8 +60,8 @@ int main(int argc, char **argv){
     //multigrid
     if (t<iterations){
       while (error>1.e-3){
-        FAS_multigrid<grid3D>(L,*u,f,d,e,dt,h,6);
-        dfct_AC(d,*u,f,dt,h);
+        FAS_multigrid<grid3D>(&L,*u,f,dt,h,6);
+        dfct_CH(d,*u,f,dt,h);
         error=d.l2_norm();
 	  
         if (error_old && error>=error_old){
