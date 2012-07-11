@@ -55,7 +55,6 @@ int main(int argc, char **argv){
     f_CH(f,*u,dt,h);
     
     double error=1;
-    double error_old=NULL;
 
     //multigrid
     if (t<iterations){
@@ -68,7 +67,6 @@ int main(int argc, char **argv){
           printf("error is inf or nan!\n");
           exit(1);
         }
-        error_old=error;
       }
     }
   }
