@@ -72,8 +72,8 @@ template <class system>
 void FAS_multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_level, int level){
 
   //Set number of iterations on the fine grid and coarse grid
-  int v1=2;
-  int v2=2;
+  int v1=1;
+  int v2=1;
 
   //Presmoothing
   for (int i=0;i<v1;++i)

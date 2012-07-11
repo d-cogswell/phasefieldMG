@@ -59,13 +59,13 @@ int main(int argc, char **argv){
 
     //multigrid
     if (t<iterations){
-      while (error>1.e-3){
+      while (error>1.e-4){
         FAS_multigrid<grid3D>(&L,*u,f,dt,h,6);
         dfct_CH(d,*u,f,dt,h);
         error=d.l2_norm();
-	  
-        if (error_old && error>=error_old){
-          printf("error not decreasing!\n");
+
+        if (!isfinite(error)){
+          printf("error is inf or nan!\n");
           exit(1);
         }
         error_old=error;
