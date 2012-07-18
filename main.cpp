@@ -11,17 +11,21 @@ int main(int argc, char **argv){
   char* filename;
   grid3D* initial_condition;
   int option_char;
- Image img(Geometry(Nx,Ny),"black");
+  Image img(Geometry(Nx,Ny),"black");
+  char* outDir="output";
 
   // Handle command line options
   bool inputFileSupplied=false;
-  while ((option_char = getopt(argc, argv, "i:")) != -1)
+  while ((option_char = getopt(argc, argv, "i:o:")) != -1)
     switch (option_char){
-    case 'i':
-      inputFileSupplied=true;
-      filename=optarg;
-      initial_condition = new grid3D(filename);
-      break;
+      case 'i':
+        inputFileSupplied=true;
+        filename=optarg;
+        initial_condition = new grid3D(filename);
+        break;
+      case 'o':
+        outDir=optarg;
+        break;
     }
 
   if (!inputFileSupplied){
@@ -40,7 +44,7 @@ int main(int argc, char **argv){
     //Write output, if necessary
     char outFile[128];
     if (!(t%outputEvery)){
-      sprintf(outFile,"output/p%6.6i.jpg",t);
+      sprintf(outFile,"%s/p%6.6i.jpg",outDir,t);
       printf("writing output: %s\n", outFile);
       gridLoop3D(*u){
         double val=(1+(*u)(i,j,0))/2;
