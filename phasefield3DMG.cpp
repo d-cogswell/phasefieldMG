@@ -199,46 +199,42 @@ void L_CH(grid3D& L, int Nx, int Ny, double dt, double h){
 //-----------------------------------------------------------------------------
 void GS_LEX_heat_eqn(grid3D& u, grid3D& f, double dt, double h){
   u.periodicBoundary();
-  double D=2*sq(h)+4*dt;
+  double D=dt/sq(h);
   gridLoop3D(u){
-    u(i,j,k)=(dt*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k))+f(i,j,k))/D;
+    u(i,j,k)=(f(i,j,k)+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(2+4*D);
   }
   u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 void dfct_heat_eqn(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
   gridLoop3D(d){
-    d(i,j,k)=f(i,j,k)-(2*sq(h)+4*dt)*u(i,j,k)+dt*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k));
+    d(i,j,k)=f(i,j,k)-(2*u(i,j,k)-dt*u.laplacian(i,j,k,h));
   }
 }
 //-----------------------------------------------------------------------------
 void d_plus_Nu_heat_eqn(grid3D& f, grid3D& d, grid3D& u,double dt, double h){
   u.periodicBoundary();
   gridLoop3D(f){
-    f(i,j,k)=d(i,j,k)+(2*sq(h)+4*dt)*u(i,j,k)-dt*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k));
+    f(i,j,k)=d(i,j,k)+2*u(i,j,k)-dt*u.laplacian(i,j,k,h);
   }
 }
 //-----------------------------------------------------------------------------
 void L_heat_eqn(grid3D& L, int Nx, int Ny, double dt, double h){
   L=0;
-
+  double D=dt/sq(h);
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      L(row,row,0)+=2*sq(h)+4*dt;
-      L(row,j*Nx+(i+1)%Nx,0)+=-dt;
-      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-dt;
-      L(row,((j+1)%Ny)*Nx+i,0)+=-dt;
-      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-dt;
+      L(row,row,0)+=2+4*D;
+      L(row,j*Nx+(i+1)%Nx,0)+=-D;
+      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-D;
+      L(row,((j+1)%Ny)*Nx+i,0)+=-D;
+      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-D;
     }
 }
 //-----------------------------------------------------------------------------
 void f_heat_eqn(grid3D& f, grid3D& u, double dt, double h){
   gridLoop3D(f){
-    f(i,j,k)=dt*(u(i+1,j,k)
-                +u(i-1,j,k)
-                +u(i,j+1,k)
-                +u(i,j-1,k))
-                +(2*sq(h)-4*dt)*u(i,j,k);
+    f(i,j,k)=2*u(i,j,k)+dt*u.laplacian(i,j,k,h);
   }
 }
