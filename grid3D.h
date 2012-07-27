@@ -52,6 +52,15 @@ class grid3D{
   void periodicBoundary(void);
   void neumannBoundary(double);
   void dirichletBoundary(double);
+  void xAxisPeriodicBoundary(int=0,int=0);
+  void yAxisPeriodicBoundary(int=0,int=0);
+  void zAxisPeriodicBoundary(int=0,int=0);
+  void xAxisNeumannBoundary(double,int=0,int=0);
+  void yAxisNeumannBoundary(double,int=0,int=0);
+  void zAxisNeumannBoundary(double,int=0,int=0);
+  void xAxisDirichletBoundary(double,int=0,int=0);
+  void yAxisDirichletBoundary(double,int=0,int=0);
+  void zAxisDirichletBoundary(double,int=0,int=0);
   grid3D* prolongate(int,int,int=1);
   grid3D* restrict();
   grid3D* getCoarseGrid();
@@ -84,19 +93,11 @@ class grid3D{
   grid3D *coarse, *fine;
 
  protected:
-  void xAxisPeriodicBoundary(int=0,int=0);
-  void yAxisPeriodicBoundary(int=0,int=0);
-  void zAxisPeriodicBoundary(int=0,int=0);
-  void xAxisNeumannBoundary(double,int=0,int=0);
-  void yAxisNeumannBoundary(double,int=0,int=0);
+
   void neg_yAxisNeumannBoundary(double,int=0,int=0);
   void pos_yAxisNeumannBoundary(double,int=0,int=0);
-  void zAxisNeumannBoundary(double,int=0,int=0);
-  void xAxisDirichletBoundary(double,int=0,int=0);
-  void yAxisDirichletBoundary(double,int=0,int=0);
   void neg_yAxisDirichletBoundary(double,int=0,int=0);
   void pos_yAxisDirichletBoundary(double,int=0,int=0);
-  void zAxisDirichletBoundary(double,int=0,int=0);
   void allocate(int,int,int,int);
   void getPlane(double*,int,int,int=0,int=0);
   void setPlane(double*,int,int,int=0,int=0);
