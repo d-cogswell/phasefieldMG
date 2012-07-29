@@ -96,7 +96,7 @@ grid3D::~grid3D(void){
 //-----------------------------------------------------------------------------
 void grid3D::initializeRandom(double min, double max){
   //srand((unsigned)time(NULL));
-  bndryGridLoop{
+  gridLoop{
     (*this)(i,j,k)=((double)rand()/RAND_MAX)*(max-min)+min;
   }
 }
