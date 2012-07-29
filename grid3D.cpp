@@ -219,8 +219,8 @@ void grid3D::xAxisNeumannBoundary(double nh, int ext1, int ext2){
   else{
     for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
       for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(-1,j,k)=(*this)(1,j,k)-2*nh;
-        (*this)(N1,j,k)=2*nh+(*this)(N1-2,j,k);
+        (*this)(-1,j,k)=(*this)(0,j,k)-nh;
+        (*this)(N1,j,k)=nh+(*this)(N1-1,j,k);
       }
   }
 }
@@ -233,8 +233,8 @@ void grid3D::yAxisNeumannBoundary(double nh, int ext1, int ext2){
   else{
     for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
       for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
-        (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
+        (*this)(i,-1,k)=(*this)(i,0,k)-nh;
+        (*this)(i,N2,k)=nh+(*this)(i,N2-1,k);
       }
   }
 }
@@ -247,7 +247,7 @@ void grid3D::neg_yAxisNeumannBoundary(double nh, int ext1, int ext2){
   else{
     for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
       for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(i,-1,k)=(*this)(i,1,k)-2*nh;
+        (*this)(i,-1,k)=(*this)(i,0,k)-nh;
     }
   }
 }
@@ -260,7 +260,7 @@ void grid3D::pos_yAxisNeumannBoundary(double nh, int ext1, int ext2){
   else{
     for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
       for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(i,N2,k)=2*nh+(*this)(i,N2-2,k);
+        (*this)(i,N2,k)=nh+(*this)(i,N2-1,k);
       }
   }
 }
@@ -273,8 +273,8 @@ void grid3D::zAxisNeumannBoundary(double nh, int ext1, int ext2){
   else{
     for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
       for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
-        (*this)(i,j,-1)=(*this)(i,j,1)-2*nh;
-        (*this)(i,j,N3)=2*nh+(*this)(i,j,N3-2);
+        (*this)(i,j,-1)=(*this)(i,j,0)-nh;
+        (*this)(i,j,N3)=nh+(*this)(i,j,N3-1);
     }
   }
 }
