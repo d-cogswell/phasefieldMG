@@ -52,8 +52,10 @@ void multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_le
   }
 
   //Otherwise perform a coarse grid correction to solve for e2h
-  else
+  else{
+    e2h=0;
     multigrid<system>(L,e2h,d2h,dt,2*h,max_level,level+1);
+  }
   
   //Prolongate the error to the fine mesh
   e2h.prolongate(e.getDimension(1),e.getDimension(2));
