@@ -338,15 +338,8 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
     fine->coarse=this;
   }
 
-  gridLoop{  
-    (*fine)(2*i,2*j,2*k)=(*this)(i,j,k);
-    (*fine)(2*i+1,2*j,2*k)=(*this)(i+.5,(double)j,(double)k);
-    (*fine)(2*i,2*j+1,2*k)=(*this)((double)i,j+.5,(double)k);
-    (*fine)(2*i,2*j,2*k+1)=(*this)((double)i,(double)j,k+.5);
-    (*fine)(2*i+1,2*j+1,2*k)=(*this)(i+.5,j+.5,(double)k);
-    (*fine)(2*i+1,2*j,2*k+1)=(*this)(i+.5,(double)j,k+.5);
-    (*fine)(2*i,2*j+1,2*k+1)=(*this)((double)i,j+.5,k+.5);
-    (*fine)(2*i+1,2*j+1,2*k+1)=(*this)(i+.5,j+.5,k+.5);
+  gridLoop3D(*fine){
+    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,(double)k/2); 
   }
   return(fine);
 }
