@@ -6,20 +6,19 @@
 //Function definitions
 //-----------------------------------------------------------------------------
 template <class system>
-void multigrid(grid3D**,system&,system&,double,double,int=2,int=1);
+void multigrid(grid3D**,system&,system&,double,double,int,int=2,int=1);
 template <class system>
-void FAS_multigrid(grid3D**,system&,system&,double,double,int=2,int=1);
+void FAS_multigrid(grid3D**,system&,system&,double,double,int,int=2,int=1);
 void gaussian_elimination(grid3D&,grid3D&,grid3D&);
 
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
 template <class system>
-void multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_level, int level){
+void multigrid(grid3D** L, system& u, system& f, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of pre and post smoothing iterations
   int v1=1;
   int v2=1;
-  int gamma=1;
 
   //Presmoothing
   for (int i=0;i<v1;++i)
@@ -55,8 +54,8 @@ void multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_le
   //Otherwise perform a coarse grid correction to solve for e2h
   else{
     e2h=0;
-    for (int i=0;i<gamma;++i)
-      multigrid<system>(L,e2h,d2h,dt,2*h,max_level,level+1);
+    for (int i=gamma;i>0;--i)
+      multigrid<system>(L,e2h,d2h,dt,2*h,i,max_level,level+1);
   }
   
   //Prolongate the error to the fine mesh
@@ -73,12 +72,11 @@ void multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_le
 //This function applies the full approximation scheme for solving nonlinear problems
 //-----------------------------------------------------------------------------
 template <class system>
-void FAS_multigrid(grid3D** L, system& u, system& f, double dt, double h, int max_level, int level){
+void FAS_multigrid(grid3D** L, system& u, system& f, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of iterations on the fine grid and coarse grid
   int v1=1;
   int v2=1;
-  int gamma=1;
 
   //Presmoothing
   for (int i=0;i<v1;++i)
@@ -120,8 +118,8 @@ void FAS_multigrid(grid3D** L, system& u, system& f, double dt, double h, int ma
   //Otherwise perform a coarse grid correction
   else{
     e2h=u2h;
-    for (int i=0;i<gamma;++i)
-      FAS_multigrid<system>(L,e2h,f2h,dt,2*h,max_level,level+1);
+    for (int i=gamma;i>0;--i)
+      FAS_multigrid<system>(L,e2h,f2h,dt,2*h,i,max_level,level+1);
   }
 
   //Compute the coarse grid correction
