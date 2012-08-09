@@ -86,11 +86,15 @@ grid3D::~grid3D(void){
   delete [] grid;
 
   //Delete coarse and fine grids if they've been allocated
-  if (!coarse)
+  if (coarse){
+    coarse->fine=fine;
     delete coarse;
+  }
 
-  if (!fine)
+  if (fine){
+    fine->coarse=coarse;
     delete fine;
+  }
 }
 
 //-----------------------------------------------------------------------------
