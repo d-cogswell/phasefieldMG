@@ -348,7 +348,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   return(fine);
 }
 //-----------------------------------------------------------------------------
-//Function to perform restriction by injection (FW operator)
+//Function to perform restriction with the FW operator
 grid3D* grid3D::restrict(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
@@ -366,6 +366,25 @@ grid3D* grid3D::restrict(){
      +(*this)(2*i+1,2*j+1,0)+(*this)(2*i-1,2*j-1,0)
      +(*this)(2*i+1,2*j-1,0)+(*this)(2*i-1,2*j+1,0));
   }
+  
+  return(coarse);
+}
+//-----------------------------------------------------------------------------
+//Function to perform restriction by injections
+grid3D* grid3D::injection(){
+  if (coarse==NULL){
+    int N2x=(N1+1)/2;
+    int N2y=(N2+1)/2;
+    int N2z=(N3+1)/2;
+
+    coarse=new grid3D(N2x,N2y,N2z);
+    coarse->fine=this;
+  }
+
+  gridLoop3D(*coarse){
+    (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
+  }
+  
   return(coarse);
 }
 //-----------------------------------------------------------------------------

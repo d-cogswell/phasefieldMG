@@ -93,7 +93,7 @@ void FAS_multigrid(grid3D** L, system& u, system& f, double dt, double h, int ga
   
   //Restrict the defect and smoothed u
   system& d2h=*d.restrict();
-  system& u2h=*u.restrict();
+  system& u2h=*u.injection();
 
   //Compute the RHS
   system& f2h=*f.getCoarseGrid();
