@@ -10,6 +10,7 @@ int main(int argc, char **argv){
 
   char* filename;
   grid3D* initial_condition;
+  grid3D* L = NULL;
   int option_char;
   Image img(Geometry(Nx,Ny),"black");
   char* outDir="output";
@@ -31,12 +32,11 @@ int main(int argc, char **argv){
   if (!inputFileSupplied){
     printf("No input file supplied!\n");
     initial_condition = new grid3D(Nx,Ny,1);
+    initial_condition->initializeGaussian(.01);
   }
 
-  initial_condition->initializeGaussian(.01);
-  grid3D f(Nx,Ny,1), d(Nx,Ny,1);
-  grid3D* u = initial_condition;
-  grid3D* L = NULL;
+  grid3D& u = *initial_condition;
+  grid3D f(Nx,Ny,1), d(Nx,Ny,1), e(Nx,Ny,1);
   
   //Performs semi-implicit timestepping
   for (int t=0; t<=iterations; ++t){
@@ -46,8 +46,8 @@ int main(int argc, char **argv){
     if (!(t%outputEvery)){
       sprintf(outFile,"%s/p%6.6i.jpg",outDir,t);
       printf("writing output: %s\n", outFile);
-      gridLoop3D(*u){
-        double val=(1+(*u)(i,j,0))/2;
+      gridLoop3D(u){
+        double val=(1+u(i,j,0))/2;
         val=MaxRGB*clip(val,0,1);
         img.pixelColor(i,j,Color(val,val,val,0));
       }
@@ -55,16 +55,16 @@ int main(int argc, char **argv){
     }
 
     //Create f
-    u->periodicBoundary();
-    f_CH(f,*u,dt,h);
+    u.periodicBoundary();
+    f_CH(f,u,dt,h);
     
     double error=1;
 
     //multigrid
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<grid3D>(&L,*u,f,dt,h,2,6);
-        dfct_CH(d,*u,f,dt,h);
+        FAS_multigrid<grid3D>(&L,u,f,d,dt,h,2,6);
+        dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 
         if (!isfinite(error)){
