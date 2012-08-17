@@ -2,7 +2,7 @@ TARGET = mse3D
 
 CXX = g++ 
 CXXFLAGS = -O3
-OBJECTS = main.o multigrid3D.o phasefield3DMG.o libgrid3D.a
+OBJECTS = main.o multigrid3D.o electrochem.o electrodep3DMG.o libgrid3D.a
 LIBS = `Magick++-config --libs` -L. -lgrid3D
 
 $(TARGET): $(OBJECTS)
@@ -16,4 +16,4 @@ lib%.a: %.o
 	ranlib $@
 
 clean:
-	rm $(TARGET) *.o *.a
+	rm -f $(TARGET) *.o *.a
