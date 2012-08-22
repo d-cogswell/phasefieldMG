@@ -342,6 +342,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
     fine->coarse=this;
   }
 
+  #pragma omp parallel for collapse(3)
   gridLoop3D(*fine){
     (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,(double)k/2); 
   }
@@ -359,6 +360,7 @@ grid3D* grid3D::restrict(){
     coarse->fine=this;
   }
 
+  #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
     (*coarse)(i,j,k)=1./16.*(4*(*this)(2*i,2*j,0)
      +2*(*this)(2*i+1,2*j,0)+2*(*this)(2*i-1,2*j,0)
@@ -381,6 +383,7 @@ grid3D* grid3D::injection(){
     coarse->fine=this;
   }
 
+  #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
     (*coarse)(i,j,k)=(*this)(2*i,2*j,0);
   }
@@ -531,24 +534,28 @@ grid3D* grid3D::select(int i1, int i2, int j1, int j2, int k1, int k2){
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator=(const double value){
+  #pragma omp parallel for
   bndryGridLoop{
     (*this)(i,j,k)=value;
   }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator=(grid3D& grid){
+  #pragma omp parallel for
   bndryGridLoop{
     (*this)(i,j,k)=grid(i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator+=(grid3D& grid){
+  #pragma omp parallel for
   bndryGridLoop{
     (*this)(i,j,k)+=grid(i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator-=(grid3D& grid){
+  #pragma omp parallel for
   bndryGridLoop{
     (*this)(i,j,k)-=grid(i,j,k);
   }
