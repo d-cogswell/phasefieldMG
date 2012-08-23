@@ -13,7 +13,7 @@ int main(int argc, char **argv){
   grid3D* L = NULL;
   int option_char;
   Image img(Geometry(Nx,Ny),"black");
-  char* outDir="output";
+  const char* outDir="output";
 
   // Handle command line options
   bool inputFileSupplied=false;
