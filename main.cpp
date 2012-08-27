@@ -36,7 +36,7 @@ int main(int argc, char **argv){
   }
 
   grid3D& u = *initial_condition;
-  grid3D f(Nx,Ny,1), d(Nx,Ny,1), e(Nx,Ny,1);
+  grid3D f(Nx,Ny,1), d(Nx,Ny,1), v(Nx,Ny,1), w(Nx,Ny,1);
   
   //Performs semi-implicit timestepping
   for (int t=0; t<=iterations; ++t){
@@ -63,7 +63,7 @@ int main(int argc, char **argv){
     //multigrid
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<grid3D>(&L,u,f,d,dt,h,2,6);
+        FAS_multigrid<grid3D>(&L,u,f,d,v,w,dt,h,2,6);
         dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 

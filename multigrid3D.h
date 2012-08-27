@@ -8,7 +8,7 @@
 template <class system>
 void multigrid(grid3D**,system&,system&,system&,system&,double,double,int,int=2,int=1);
 template <class system>
-void FAS_multigrid(grid3D**,system&,system&,system&,double,double,int,int=2,int=1);
+void FAS_multigrid(grid3D**,system&,system&,system&,system&,system&,double,double,int,int=2,int=1);
 void gaussian_elimination(grid3D&,grid3D&,grid3D&);
 
 //This is a recursive function that relaxes the error using 'max_level' grid
@@ -65,7 +65,7 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
 //This function applies the full approximation scheme for solving nonlinear problems
 //-----------------------------------------------------------------------------
 template <class system>
-void FAS_multigrid(grid3D** L, system& u, system& f, system& d, double dt, double h, int gamma, int max_level, int level){
+void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, system& w, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of iterations on the fine grid and coarse grid
   int v1=1;
@@ -74,12 +74,6 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, double dt, doubl
   //Presmoothing
   for (int i=0;i<v1;++i)
     GS_LEX_CH(u,f,dt,h);
-
-  int Nx=u.getDimension(1);
-  int Ny=u.getDimension(2);
-  int Nz=u.getDimension(3);
-//   system d(Nx,Ny,Nz);
-  system e(Nx,Ny,Nz);
   
   //Compute the defect
   dfct_CH(d,u,f,dt,h);
@@ -87,10 +81,11 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, double dt, doubl
   //Restrict the defect and smoothed u
   system& d2h=*d.restrict();
   system& u2h=*u.injection();
+  system& v2h=*v.getCoarseGrid();
+  system& w2h=*w.getCoarseGrid();
 
   //Compute the RHS
   system& f2h=*f.getCoarseGrid();
-  system& e2h=*e.getCoarseGrid();
   d_plus_Nu_CH(f2h,d2h,u2h,dt,2*h);
 
   //Direct solve on the coarsest mesh
@@ -105,24 +100,25 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, double dt, doubl
       *L = new grid3D(Nx*Ny,Nx*Ny,1);
 
     L_CH(**L,Nx,Ny,dt,2*h);
-    gaussian_elimination(**L,e2h,f2h);
+    gaussian_elimination(**L,w2h,f2h);
   }
 
   //Otherwise perform a coarse grid correction
   else{
-    e2h=u2h;
+    w2h=u2h;
     for (int i=gamma;i>0;--i)
-      FAS_multigrid<system>(L,e2h,f2h,d2h,dt,2*h,i,max_level,level+1);
+      FAS_multigrid<system>(L,w2h,f2h,d2h,v2h,w2h,dt,2*h,i,max_level,level+1);
   }
 
   //Compute the coarse grid correction
-  e2h-=u2h;
+  gridLoop3D(v2h)
+    v2h(i,j,k)=w2h(i,j,k)-u2h(i,j,k);
   
   //Prolongate the error to the fine mesh
-  e2h.prolongate(e.getDimension(1),e.getDimension(2));
+  v2h.prolongate(v.getDimension(1),v.getDimension(2));
 
   //Compute the corrected approximation
-  u+=e;
+  u+=v;
 
   //Postsmoothing
   for (int i=0;i<v2;++i)
