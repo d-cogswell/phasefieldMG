@@ -107,7 +107,7 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   else{
     w2h=u2h;
     for (int i=gamma;i>0;--i)
-      FAS_multigrid<system>(L,w2h,f2h,d2h,v2h,w2h,dt,2*h,i,max_level,level+1);
+      FAS_multigrid<system>(L,w2h,f2h,d2h,v2h,u2h,dt,2*h,i,max_level,level+1);
   }
 
   //Compute the coarse grid correction
