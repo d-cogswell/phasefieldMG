@@ -79,11 +79,10 @@ grid3D::grid3D(const grid3D& grid){
 //-----------------------------------------------------------------------------
 grid3D::~grid3D(void){
   for (int i=0; i<N1+2*boundary; ++i){
-    for (int j=0; j<N2+2*boundary; ++j)
-      delete [] grid[i][j];
     delete [] grid[i];
   }
   delete [] grid;
+  delete [] data;
 
   //Delete coarse and fine grids if they've been allocated
   if (coarse){
@@ -565,10 +564,11 @@ void grid3D::allocate(int N1, int N2, int N3, int boundary){
   int n1=N1+2*boundary;
   int n2=N2+2*boundary;
   int n3=N3+2*boundary;
+  data = new double[n1*n2*n3];
   grid = new double**[n1];
   for (int i=0; i<n1; ++i){
     grid[i] = new double*[n2];
     for (int j=0; j<n2; ++j)
-      grid[i][j] = new double[n3];
+        grid[i][j] = data+i*n2*n3+j*n3;
   }
 }

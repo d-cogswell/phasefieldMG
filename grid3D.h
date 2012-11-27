@@ -107,6 +107,7 @@ class grid3D{
   int N3;
   int boundary;
   double*** grid;
+  double* data;
 
   /* N_inc variables are used to keep track of the initial size of the grid 
    * that was read from the input file.  warned_range and warned_bndry are used
