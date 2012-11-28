@@ -78,7 +78,9 @@ grid3D::grid3D(const grid3D& grid){
 }
 //-----------------------------------------------------------------------------
 grid3D::~grid3D(void){
+  grid-=boundary;
   for (int i=0; i<N1+2*boundary; ++i){
+    grid[i]-=boundary;
     delete [] grid[i];
   }
   delete [] grid;
@@ -566,9 +568,16 @@ void grid3D::allocate(int N1, int N2, int N3, int boundary){
   int n3=N3+2*boundary;
   data = new double[n1*n2*n3];
   grid = new double**[n1];
+  
+  //Create pointers to the 3 dimensions of the grid, 
+  //and set the origin at (boundary,boundary,boundary)
   for (int i=0; i<n1; ++i){
     grid[i] = new double*[n2];
-    for (int j=0; j<n2; ++j)
-        grid[i][j] = data+i*n2*n3+j*n3;
+    for (int j=0; j<n2; ++j){
+      grid[i][j] = data+i*n2*n3+j*n3;
+      grid[i][j]+=boundary;
+    }
+    grid[i]+=boundary;
   }
+  grid+=boundary;
 }

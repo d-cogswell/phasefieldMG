@@ -125,7 +125,7 @@ class grid3D{
 //-----------------------------------------------------------------------------
 //This function provides access to elements in the grid
 double& grid3D::operator()(int i, int j, int k){
-  return(grid[boundary+i][boundary+j][boundary+k]);
+  return(grid[i][j][k]);
 }
 
 //This function does trilinear interpolation
