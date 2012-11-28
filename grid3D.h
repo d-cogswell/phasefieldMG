@@ -71,7 +71,7 @@ class grid3D{
   void writeToFileDx(char*);
   double*** getGrid(){return(grid);}
   double* getPlane(int,int);
-  inline int getDimension(int n){int dim=0; switch (n){case X_DIM: dim=N1; break; case Y_DIM: dim=N2; break; case Z_DIM: dim=N3; break; case BND_DIM: dim=boundary; break; case 4: dim=N1_orig; break; case 5: dim=N2_orig; break; case 6: dim=N3_orig; break;}; return(dim);}
+  inline int getDimension(int n){switch (n){case X_DIM: return(N1); case Y_DIM: return(N2); case Z_DIM: return(N3); case BND_DIM: return(boundary); case 4: return(N1_orig); case 5: return(N2_orig); case 6: return(N3_orig);};}
   grid3D* select(int,int,int,int,int,int);
   inline double& operator()(int,int,int);
   inline double operator()(double,double,double);
