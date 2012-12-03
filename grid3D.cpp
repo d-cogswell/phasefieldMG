@@ -14,6 +14,12 @@
 #define bndryGridLoop for (int i=-boundary; i<N1+boundary; ++i) for (int j=-boundary; j<N2+boundary; ++j) for (int k=-boundary; k<N3+boundary; ++k)
 
 //-----------------------------------------------------------------------------
+//Linear interpolation
+double Lint(double x, double u0, double u1){
+    return(u0+(u1-u0)*x);
+}
+
+//-----------------------------------------------------------------------------
 grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
 :N1(n1),N2(n2),N3(n3),boundary(bound){
 

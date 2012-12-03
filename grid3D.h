@@ -37,6 +37,10 @@ using namespace std;
 //-----------------------------------------------------------------------------
 #define PI 3.14159
 
+//Function prototypes
+//-----------------------------------------------------------------------------
+double Lint(double,double,double);
+
 class grid3D{
  public:
   grid3D(int,int,int, int=1, double=0);
@@ -136,22 +140,17 @@ double grid3D::operator()(double i, double j, double k){
 
   //If the doubles are equal to integers, return the position
   if (i0==i && j0==j && k0==k)
-    return((*this)(i0,j0,k0));
+    return(grid[i0][j0][k0]);
 
-  double v1_k0=(*this)(i0,j0,k0)
-               +((*this)(i0+1,j0,k0)-(*this)(i0,j0,k0))*(i-i0);
-  double v2_k0=(*this)(i0,j0+1,k0)
-               +((*this)(i0+1,j0+1,k0)-(*this)(i0,j0+1,k0))*(i-i0);
+  double v1_k0=Lint(i-i0,grid[i0][j0][k0],grid[i0+1][j0][k0]);
+  double v2_k0=Lint(i-i0,grid[i0][j0][k0],grid[i0][j0+1][k0]);
+  double v1_k1=Lint(i-i0,grid[i0][j0][k0+1],grid[i0+1][j0][k0+1]);
+  double v2_k1=Lint(i-i0,grid[i0][j0+1][k0+1],grid[i0][j0+1][k0+1]);
+    
+  double v_k0=Lint(j-j0,v1_k0,v2_k0);
+  double v_k1=(j-j0,v1_k1,v2_k1);
 
-  double v1_k1=(*this)(i0,j0,k0+1)
-               +((*this)(i0+1,j0,k0+1)-(*this)(i0,j0,k0+1))*(i-i0);
-  double v2_k1=(*this)(i0,j0+1,k0+1)
-               +((*this)(i0+1,j0+1,k0+1)-(*this)(i0,j0+1,k0+1))*(i-i0);
-
-  double v_k0=v1_k0+(v2_k0-v1_k0)*(j-j0);
-  double v_k1=v1_k1+(v2_k1-v1_k1)*(j-j0);
-
-  return(v_k0+(v_k1-v_k0)*(k-k0));
+  return(Lint(k-k0,v_k0,v_k1));
 }
 
 #endif
