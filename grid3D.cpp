@@ -19,6 +19,16 @@ double Lint(double x, double u0, double u1){
     return(u0+(u1-u0)*x);
 }
 
+//Cubic interpolation
+double Cint(double x, double u_1, double u0, double u1, double u2){
+    double a0=u0;
+    double a1=-u_1/3-u0/2+u1-u2/6;
+    double a2=u_1/2-u0+u1/2;
+    double a3=-u_1/6+u0/2-u1/2+u2/6;
+    return(a0+a1*x+a2*x*x+a3*x*x*x);
+}
+
+
 //-----------------------------------------------------------------------------
 grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
 :N1(n1),N2(n2),N3(n3),boundary(bound){
