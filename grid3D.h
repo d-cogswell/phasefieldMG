@@ -145,9 +145,9 @@ double grid3D::operator()(double i, double j, double k){
     return(grid[i0][j0][k0]);
 
   double v1_k0=Lint(i-i0,grid[i0][j0][k0],grid[i0+1][j0][k0]);
-  double v2_k0=Lint(i-i0,grid[i0][j0][k0],grid[i0][j0+1][k0]);
+  double v2_k0=Lint(i-i0,grid[i0][j0+1][k0],grid[i0+1][j0+1][k0]);
   double v1_k1=Lint(i-i0,grid[i0][j0][k0+1],grid[i0+1][j0][k0+1]);
-  double v2_k1=Lint(i-i0,grid[i0][j0+1][k0+1],grid[i0][j0+1][k0+1]);
+  double v2_k1=Lint(i-i0,grid[i0][j0+1][k0+1],grid[i0+1][j0+1][k0+1]);
     
   double v_k0=Lint(j-j0,v1_k0,v2_k0);
   double v_k1=(j-j0,v1_k1,v2_k1);
