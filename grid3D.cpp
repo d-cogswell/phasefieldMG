@@ -28,6 +28,14 @@ double Cint(double x, double u_1, double u0, double u1, double u2){
     return(a0+a1*x+a2*x*x+a3*x*x*x);
 }
 
+//Forward looking cubic interpolation
+double Cint_fwd(double x, double u0, double u1, double u2, double u3){
+    double a0=u0;
+    double a1=-11./6*u0+3*u1-3./2*u2+1./3*u3;
+    double a2=u0-5./2*u1+2*u2-1./2*u3;
+    double a3=-1./6*u0+1./2*u1-1./2*u2+1./6*u3;
+    return(a0+a1*x+a2*x*x+a3*x*x*x);
+}
 
 //-----------------------------------------------------------------------------
 grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
