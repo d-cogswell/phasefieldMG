@@ -40,6 +40,7 @@ using namespace std;
 //-----------------------------------------------------------------------------
 double Lint(double,double,double);
 double Cint(double,double,double,double,double);
+double Cint_fwd(double,double,double,double,double);
 
 class grid3D{
  public:
@@ -66,6 +67,7 @@ class grid3D{
   void yAxisDirichletBoundary(double,int=0,int=0);
   void zAxisDirichletBoundary(double,int=0,int=0);
   grid3D* prolongate(int,int,int=1);
+  grid3D* prolongate_cubic(int,int,int=1);
   grid3D* restrict();
   grid3D* injection();
   grid3D* getCoarseGrid();
@@ -80,7 +82,7 @@ class grid3D{
   inline double& operator()(int,int,int);
   inline double operator()(double,double,double);
   inline double cubic(double,double,double);
-
+  
   //Finite difference operators
   inline double DX(int i,int j,int k,double h){return((*this)(i+1,j,k)-(*this)(i-1,j,k))/(2*h);}
   inline double DY(int i,int j,int k,double h){return((*this)(i,j+1,k)-(*this)(i,j-1,k))/(2*h);}
@@ -99,7 +101,9 @@ class grid3D{
   grid3D *coarse, *fine;
 
  protected:
-
+  double cubic_x(double,double,double);
+  double cubic_y(double,double,double);
+  double cubic_z(double,double,double);
   void neg_yAxisNeumannBoundary(double,int=0,int=0);
   void pos_yAxisNeumannBoundary(double,int=0,int=0);
   void neg_yAxisDirichletBoundary(double,int=0,int=0);
@@ -163,22 +167,12 @@ double grid3D::cubic(double i, double j, double k){
   //If the doubles are equal to integers, return the position
   if (i0==i && j0==j && k0==k)
     return(grid[i0][j0][k0]);
-  
-  double tij[4][4];
-  for (int x=-1; x<3; ++x)
-    for (int y=-1; y<3; ++y){
-      tij[x+1][y+1]=Cint(k-k0,
-              grid[i0+x][j0+y][k0-1],
-              grid[i0+x][j0+y][k0],
-              grid[i0+x][j0+y][k0+1],
-              grid[i0+x][j0+y][k0+2]);   
-    }
-
-  double ui[4];
-  for (int x=0; x<4; ++x)
-      ui[x]=Cint(j-j0,tij[x][0],tij[x][1],tij[x][2],tij[x][3]);
-  
-  return(Cint(i-i0,ui[0],ui[1],ui[2],ui[3]));
+  else if (i0==i && j0==j)
+    return(cubic_z(i,j,k));
+  else if (i0==i)
+    return(cubic_y(i,j,k));
+  else
+    return(cubic_x(i,j,k));
 }
 
 #endif

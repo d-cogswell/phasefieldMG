@@ -37,6 +37,58 @@ double Cint_fwd(double x, double u0, double u1, double u2, double u3){
     return(a0+a1*x+a2*x*x+a3*x*x*x);
 }
 
+double grid3D::cubic_x(double i, double j, double k){
+  int i0=(int)i;
+  int j0=(int)j;
+  int k0=(int)k;
+  
+  //If there aren't enough gridpoints, perform linear interpolation
+  if (N1<4)
+      return(Lint(i-i0,cubic_y(i0,j,k),cubic_y(i0+1,j,k)));
+  
+  if (i0==0)
+    return(Cint_fwd(i-i0,cubic_y(i,j,k),cubic_y(i+1,j,k),cubic_y(i+2,j,k),cubic_y(i+3,j,k)));    
+  else if (i0==N1-1)
+    return(Cint_fwd(1-(i-i0),cubic_y(i,j,k),cubic_y(i-1,j,k),cubic_y(i-2,j,k),cubic_y(i-3,j,k)));
+  else
+    return(Cint(i-i0,cubic_y(i-1,j,k),cubic_y(i,j,k),cubic_y(i+1,j,k),cubic_y(i+2,j,k)));   
+}
+
+
+double grid3D::cubic_y(double i, double j, double k){
+  int i0=(int)i;
+  int j0=(int)j;
+  int k0=(int)k;
+  
+  if (N2<4)
+    return(Lint(j-j0,cubic_z(i,j,k),cubic_z(i,j+1,k)));
+  
+  if (j0==0)
+    return(Cint_fwd(j-j0,cubic_z(i,j,k),cubic_z(i,j+1,k),cubic_z(i,j+2,k),cubic_z(i,j+3,k)));
+  else if (j0==N2-1)
+    return(Cint_fwd(1-(j-j0),cubic_z(i,j,k),cubic_z(i,j-1,k),cubic_z(i,j-2,k),cubic_z(i,j-3,k)));
+  else
+    return(Cint(j-j0,cubic_z(i,j-1,k),cubic_z(i,j,k),cubic_z(i,j+1,k),cubic_z(i,j+2,k)));  
+}
+
+
+double grid3D::cubic_z(double i, double j, double k){
+  int i0=(int)i;
+  int j0=(int)j;
+  int k0=(int)k;
+  
+  if (N3<4)
+    return(Lint(k-k0,grid[i0][j0][k0],grid[i0][j0][k0+1]));
+  
+  if (k0==0)
+    return(Cint_fwd(k-k0,grid[i0][j0][k0],grid[i0][j0][k0+1],grid[i0][j0][k0+2],grid[i0][j0][k0+3]));
+  else if (k0==N3-1)
+    return(Cint_fwd(1-(k-k0),grid[i0][j0][k0],grid[i0][j0][k0-1],grid[i0][j0][k0-2],grid[i0][j0][k0-3]));
+  else
+    return(Cint(k-k0,grid[i0][j0][k0-1],grid[i0][j0][k0],grid[i0][j0][k0+1],grid[i0][j0][k0+2]));  
+}
+
+
 //-----------------------------------------------------------------------------
 grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
 :N1(n1),N2(n2),N3(n3),boundary(bound){
@@ -370,6 +422,18 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   #pragma omp parallel for collapse(3)
   gridLoop3D(*fine){
     (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,(double)k/2); 
+  }
+  return(fine);
+}
+grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
+  if (fine==NULL){
+    fine=new grid3D(Nx,Ny,Nz);
+    fine->coarse=this;
+  }
+
+  #pragma omp parallel for collapse(3)
+  gridLoop3D(*fine){
+    (*fine)(i,j,k)=cubic((double)i/2,(double)j/2,(double)k/2); 
   }
   return(fine);
 }
