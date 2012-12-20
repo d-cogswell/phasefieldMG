@@ -10,8 +10,8 @@
 #define _GRID3D_H_
 
 #include <fstream>
-#include <cstdlib>
-#include <cmath>
+#include <stdlib.h>
+#include <math.h>
 using namespace std;
 
 #define X_DIM 1
