@@ -68,6 +68,7 @@ class grid3D{
   grid3D* prolongate(int,int,int=1);
   grid3D* prolongate_cubic(int,int,int=1);
   grid3D* restrict();
+  grid3D* restrict_HW();
   grid3D* injection();
   grid3D* getCoarseGrid();
   double l2_norm();

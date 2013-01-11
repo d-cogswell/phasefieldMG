@@ -438,7 +438,7 @@ grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
   return(fine);
 }
 //-----------------------------------------------------------------------------
-//Function to perform restriction with the FW operator
+//Restriction with the FW operator
 grid3D* grid3D::restrict(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
@@ -451,7 +451,7 @@ grid3D* grid3D::restrict(){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
-    (*coarse)(i,j,k)=1./16.*(4*(*this)(2*i,2*j,0)
+    (*coarse)(i,j,k)=1./16*(4*(*this)(2*i,2*j,0)
      +2*(*this)(2*i+1,2*j,0)+2*(*this)(2*i-1,2*j,0)
      +2*(*this)(2*i,2*j+1,0)+2*(*this)(2*i,2*j-1,0)
      +(*this)(2*i+1,2*j+1,0)+(*this)(2*i-1,2*j-1,0)
@@ -461,7 +461,28 @@ grid3D* grid3D::restrict(){
   return(coarse);
 }
 //-----------------------------------------------------------------------------
-//Function to perform restriction by injections
+//Restriction with the HW operator
+grid3D* grid3D::restrict_HW(){
+  if (coarse==NULL){
+    int N2x=(N1+1)/2;
+    int N2y=(N2+1)/2;
+    int N2z=(N3+1)/2;
+
+    coarse=new grid3D(N2x,N2y,N2z);
+    coarse->fine=this;
+  }
+
+  #pragma omp parallel for collapse(3)
+  gridLoop3D(*coarse){
+    (*coarse)(i,j,k)=1./8*(4*(*this)(2*i,2*j,0)
+     +(*this)(2*i+1,2*j,0)+(*this)(2*i-1,2*j,0)
+     +(*this)(2*i,2*j+1,0)+(*this)(2*i,2*j-1,0));
+  }
+  
+  return(coarse);
+}
+//-----------------------------------------------------------------------------
+//Restriction by injection
 grid3D* grid3D::injection(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
