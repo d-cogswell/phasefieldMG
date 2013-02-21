@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
   int Nx=129,Ny=129;
+  int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2));
   double h=1;
   double dt=1;
   int iterations=100;
@@ -63,7 +64,7 @@ int main(int argc, char **argv){
     //multigrid
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<grid3D>(&L,u,f,d,v,w,dt,h,2,6);
+        FAS_multigrid<grid3D>(&L,u,f,d,v,w,dt,h,2,grids);
         dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 
