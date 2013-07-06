@@ -67,7 +67,7 @@ class grid3D{
   void zAxisDirichletBoundary(double,int=0,int=0);
   grid3D* prolongate(int,int,int=1);
   grid3D* prolongate_cubic(int,int,int=1);
-  grid3D* restrict();
+  grid3D* restrict_FW();
   grid3D* restrict_HW();
   grid3D* injection();
   grid3D* getCoarseGrid();

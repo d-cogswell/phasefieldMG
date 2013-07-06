@@ -26,7 +26,7 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
 
   //Compute the defect and restrict it
   dfct_CH(d,u,f,dt,h);
-  system& d2h=*d.restrict();
+  system& d2h=*d.restrict_FW();
   system& e2h=*e.getCoarseGrid();
 
   //Direct solve on the coarsest mesh
@@ -79,7 +79,7 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   dfct_CH(d,u,f,dt,h);
   
   //Restrict the defect and smoothed u
-  system& d2h=*d.restrict();
+  system& d2h=*d.restrict_FW();
   system& u2h=*u.injection();
   system& v2h=*v.getCoarseGrid();
   system& w2h=*w.getCoarseGrid();

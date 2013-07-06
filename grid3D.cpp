@@ -439,7 +439,7 @@ grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
 }
 //-----------------------------------------------------------------------------
 //Restriction with the FW operator
-grid3D* grid3D::restrict(){
+grid3D* grid3D::restrict_FW(){
   if (coarse==NULL){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
