@@ -146,7 +146,11 @@ grid3D::grid3D(const grid3D& grid){
   N2_orig=grid.N2_orig;
   N3_orig=grid.N3_orig;
   boundary=grid.boundary;
-  *coarse=*grid.coarse;
+  
+  if (grid.coarse)
+    *coarse=*grid.coarse;
+  
+  if (grid.fine)
   *fine=*grid.fine;
 
   //Allocate space for the grid
