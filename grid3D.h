@@ -45,7 +45,6 @@ class grid3D{
  public:
   grid3D(int,int,int, int=1, double=0);
   grid3D(char*,int=1, double=0, int=0, int=0, int=0, int=0, int=0, int=0);
-  grid3D(const grid3D&);
   ~grid3D(void);
   void initializeRandom(double,double);
   void initializeGaussian(double);

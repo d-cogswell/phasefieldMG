@@ -137,25 +137,7 @@ grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc,
 
   inFile.close();
 }
-//-----------------------------------------------------------------------------
-grid3D::grid3D(const grid3D& grid){
-  N1=grid.N1;
-  N2=grid.N2;
-  N3=grid.N3;
-  N1_orig=grid.N1_orig;
-  N2_orig=grid.N2_orig;
-  N3_orig=grid.N3_orig;
-  boundary=grid.boundary;
-  
-  if (grid.coarse)
-    *coarse=*grid.coarse;
-  
-  if (grid.fine)
-  *fine=*grid.fine;
 
-  //Allocate space for the grid
-  allocate(N1,N2,N3,boundary);
-}
 //-----------------------------------------------------------------------------
 grid3D::~grid3D(void){
   grid-=boundary;
