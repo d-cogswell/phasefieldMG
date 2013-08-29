@@ -79,6 +79,8 @@ class grid3D{
   inline int getDimension(int n){switch (n){case X_DIM: return(N1); case Y_DIM: return(N2); case Z_DIM: return(N3); case BND_DIM: return(boundary); case 4: return(N1_orig); case 5: return(N2_orig); case 6: return(N3_orig);};}
   grid3D* select(int,int,int,int,int,int);
   inline double& operator()(int,int,int);
+  inline double operator()(double,int,int);
+  inline double operator()(int,double,int);
   inline double operator()(double,double,double);
   inline double cubic(double,double,double);
   
@@ -134,6 +136,18 @@ class grid3D{
 //This function provides access to elements in the grid
 double& grid3D::operator()(int i, int j, int k){
   return(grid[i][j][k]);
+}
+
+double grid3D::operator()(double i, int j, int k){
+    int fl_i=(int)floor(i);
+    double x=i-fl_i;
+    return((1-x)*grid[fl_i][j][k]+x*grid[fl_i+1][j][k]);
+}
+
+double grid3D::operator()(int i, double j, int k){
+    int fl_j=(int)floor(j);
+    double x=j-fl_j;
+    return((1-x)*grid[i][fl_j][k]+x*grid[i][fl_j+1][k]);
 }
 
 //Trilinear interpolation
