@@ -139,15 +139,13 @@ double& grid3D::operator()(int i, int j, int k){
 }
 
 double grid3D::operator()(double i, int j, int k){
-    int fl_i=(int)floor(i);
-    double x=i-fl_i;
-    return((1-x)*grid[fl_i][j][k]+x*grid[fl_i+1][j][k]);
+    int fl_i=floor(i);
+    return((1-i+fl_i)*operator()(fl_i,j,k)+(i-fl_i)*operator()(fl_i+1,j,k));
 }
 
 double grid3D::operator()(int i, double j, int k){
-    int fl_j=(int)floor(j);
-    double x=j-fl_j;
-    return((1-x)*grid[i][fl_j][k]+x*grid[i][fl_j+1][k]);
+    int fl_j=floor(j);
+    return((1-j+fl_j)*operator()(i,fl_j,k)+(j-fl_j)*operator()(i,fl_j+1,k));
 }
 
 //Trilinear interpolation
