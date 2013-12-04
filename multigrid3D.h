@@ -29,6 +29,9 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
   system& d2h=*d.restrict_FW();
   system& e2h=*e.getCoarseGrid();
 
+  //Set the initial guess for the LHS
+  e2h=0;
+
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
 
@@ -46,7 +49,6 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
 
   //Otherwise perform a coarse grid correction to solve for e2h
   else{
-    e2h=0;
     for (int i=gamma;i>0;--i)
       multigrid<system>(L,e2h,d2h,*u.getCoarseGrid(),*f.getCoarseGrid(),dt,2*h,i,max_level,level+1);
   }
@@ -88,6 +90,9 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   system& f2h=*f.getCoarseGrid();
   d_plus_Nu_CH(f2h,d2h,u2h,dt,2*h);
 
+  //Set the initial guess for the LHS
+  w2h=u2h;
+
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
 
@@ -105,7 +110,6 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
 
   //Otherwise perform a coarse grid correction
   else{
-    w2h=u2h;
     for (int i=gamma;i>0;--i)
       FAS_multigrid<system>(L,w2h,f2h,d2h,v2h,u2h,dt,2*h,i,max_level,level+1);
   }
