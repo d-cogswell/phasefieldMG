@@ -150,9 +150,9 @@ double grid3D::operator()(int i, double j, int k){
 
 //Trilinear interpolation
 double grid3D::operator()(double i, double j, double k){
-  int i0=(int)i;
-  int j0=(int)j;
-  int k0=(int)k;
+  int i0=floor(i);
+  int j0=floor(j);
+  int k0=floor(k);
 
   //If the doubles are equal to integers, return the position
   if (i0==i && j0==j && k0==k)
