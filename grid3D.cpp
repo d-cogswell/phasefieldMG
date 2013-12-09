@@ -407,7 +407,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*fine){ 
-    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,0.);
+    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,0);
   }
   return(fine);
 }

@@ -81,6 +81,7 @@ class grid3D{
   inline double& operator()(int,int,int);
   inline double operator()(double,int,int);
   inline double operator()(int,double,int);
+  inline double operator()(double,double,int);
   inline double operator()(double,double,double);
   inline double cubic(double,double,double);
   
@@ -139,13 +140,25 @@ double& grid3D::operator()(int i, int j, int k){
 }
 
 double grid3D::operator()(double i, int j, int k){
-    int fl_i=floor(i);
-    return((1-i+fl_i)*operator()(fl_i,j,k)+(i-fl_i)*operator()(fl_i+1,j,k));
+    int i0=floor(i);
+    return(i==i0 ? operator()(i0,j,k) : Lint(i-i0,operator()(i0,j,k),operator()(i0+1,j,k)));
 }
 
 double grid3D::operator()(int i, double j, int k){
-    int fl_j=floor(j);
-    return((1-j+fl_j)*operator()(i,fl_j,k)+(j-fl_j)*operator()(i,fl_j+1,k));
+    int j0=floor(j);
+    return(j==j0 ? operator()(i,j0,k) : Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
+}
+
+double grid3D::operator()(double i, double j, int k){
+  int i0=floor(i);
+  int j0=floor(j);
+  
+  if (i==i0)
+    return(operator()(i0,j,k));
+  else if (j==j0)
+    return(operator()(i,j0,k));
+  
+  return(Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
 }
 
 //Trilinear interpolation
@@ -154,19 +167,10 @@ double grid3D::operator()(double i, double j, double k){
   int j0=floor(j);
   int k0=floor(k);
 
-  //If the doubles are equal to integers, return the position
-  if (i0==i && j0==j && k0==k)
-    return(grid[i0][j0][k0]);
+  if (k==k0)
+    return(operator()(i,j,k0));
 
-  double v1_k0=Lint(i-i0,grid[i0][j0][k0],grid[i0+1][j0][k0]);
-  double v2_k0=Lint(i-i0,grid[i0][j0+1][k0],grid[i0+1][j0+1][k0]);
-  double v1_k1=Lint(i-i0,grid[i0][j0][k0+1],grid[i0+1][j0][k0+1]);
-  double v2_k1=Lint(i-i0,grid[i0][j0+1][k0+1],grid[i0+1][j0+1][k0+1]);
-    
-  double v_k0=Lint(j-j0,v1_k0,v2_k0);
-  double v_k1=(j-j0,v1_k1,v2_k1);
-
-  return(Lint(k-k0,v_k0,v_k1));
+  return(Lint(k-k0,operator()(i,j,k0),operator()(i,j,k0+1)));
 }
 
 //Tricubic interpolation
