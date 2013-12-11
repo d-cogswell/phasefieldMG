@@ -115,8 +115,8 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   }
 
   //Compute the coarse grid correction
-  gridLoop3D(v2h)
-    v2h(i,j,k)=w2h(i,j,k)-u2h(i,j,k);
+  v2h=w2h;
+  v2h-=u2h;  
   
   //Prolongate the error to the fine mesh
   v2h.prolongate(v.getDimension(1),v.getDimension(2));
