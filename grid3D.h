@@ -24,7 +24,8 @@ using namespace std;
 
 //A macro for looping over a grid3D object
 //-----------------------------------------------------------------------------
-#define gridLoop3D(grid) for (int i=0; i<(grid).getDimension(1); ++i) for (int j=0; j<(grid).getDimension(2); ++j) for (int k=0; k<(grid).getDimension(3); ++k)
+#define gridLoop3D(grid) for (int i=0; i<(grid).N1; ++i) for (int j=0; j<(grid).N2; ++j) for (int k=0; k<(grid).N3; ++k)
+#define bndryGridLoop3D(grid) for (int i=-boundary; i<(grid).N1+boundry; ++i) for (int j=-boundary; j<(grid).N2+boundry; ++j) for (int k=-boundary; k<(grid).N3+boundry; ++k)
 
 //Math Macros
 //-----------------------------------------------------------------------------
@@ -43,6 +44,7 @@ double Cint_fwd(double,double,double,double,double);
 
 class grid3D{
  public:
+  int N1,N2,N3,boundary;
   grid3D(int,int,int, int=1, double=0);
   grid3D(char*,int=1, double=0, int=0, int=0, int=0, int=0, int=0, int=0);
   ~grid3D(void);
@@ -58,12 +60,12 @@ class grid3D{
   void xAxisPeriodicBoundary(int=0,int=0);
   void yAxisPeriodicBoundary(int=0,int=0);
   void zAxisPeriodicBoundary(int=0,int=0);
-  void xAxisNeumannBoundary(double,int=0,int=0);
-  void yAxisNeumannBoundary(double,int=0,int=0);
-  void zAxisNeumannBoundary(double,int=0,int=0);
-  void xAxisDirichletBoundary(double,int=0,int=0);
-  void yAxisDirichletBoundary(double,int=0,int=0);
-  void zAxisDirichletBoundary(double,int=0,int=0);
+  void xAxisNeumannBoundary(double,int=1,int=1);
+  void yAxisNeumannBoundary(double,int=1,int=1);
+  void zAxisNeumannBoundary(double,int=1,int=1);
+  void xAxisDirichletBoundary(double,int=1,int=1);
+  void yAxisDirichletBoundary(double,int=1,int=1);
+  void zAxisDirichletBoundary(double,int=1,int=1);
   grid3D* prolongate(int,int,int=1);
   grid3D* prolongate_cubic(int,int,int=1);
   grid3D* restrict_FW();
@@ -113,10 +115,6 @@ class grid3D{
   void allocate(int,int,int,int);
   void getPlane(double*,int,int,int=0,int=0);
   void setPlane(double*,int,int,int=0,int=0);
-  int N1;
-  int N2;
-  int N3;
-  int boundary;
   double*** grid;
   double* data;
 
