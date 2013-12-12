@@ -36,8 +36,8 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
   if (level==max_level-1){
 
      //Get the grid dimensions for the current level
-    int Nx=e2h.getDimension(1);
-    int Ny=e2h.getDimension(2);
+    int Nx=e2h.N1;
+    int Ny=e2h.N2;
 
     //Only allocate space for L once
     if (*L==NULL)
@@ -54,7 +54,7 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
   }
   
   //Prolongate the error to the fine mesh
-  e2h.prolongate(e.getDimension(1),e.getDimension(2));
+  e2h.prolongate(e.N1,e.N2);
 
   //Compute the corrected approximation
   u+=e;
@@ -97,8 +97,8 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   if (level==max_level-1){
 
     //Get the grid dimensions for the current level
-    int Nx=f2h.getDimension(1);
-    int Ny=f2h.getDimension(2);
+    int Nx=f2h.N1;
+    int Ny=f2h.N2;
 
     //Only allocate space for L once
     if (*L==NULL)
@@ -119,7 +119,7 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
   v2h-=u2h;  
   
   //Prolongate the error to the fine mesh
-  v2h.prolongate(v.getDimension(1),v.getDimension(2));
+  v2h.prolongate(v.N1,v.N2);
 
   //Compute the corrected approximation
   u+=v;
