@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 #define gridLoop for(int i=0; i<N1; ++i) for (int j=0; j<N2; ++j) for (int k=0; k<N3; ++k)
 #define bndryGridLoop for (int i=-boundary; i<N1+boundary; ++i) for (int j=-boundary; j<N2+boundary; ++j) for (int k=-boundary; k<N3+boundary; ++k)
+#define fastBndryLoop for (int n=0;n<(N1+2*boundary)*(N2+2*boundary)*(N3+2*boundary);++n)
 
 //-----------------------------------------------------------------------------
 //Linear interpolation
@@ -631,29 +632,29 @@ grid3D* grid3D::select(int i1, int i2, int j1, int j2, int k1, int k2){
 //-----------------------------------------------------------------------------
 void grid3D::operator=(const double value){
   #pragma omp parallel for
-  bndryGridLoop{
-    (*this)(i,j,k)=value;
+  fastBndryLoop{
+      data[n]=value;
   }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator=(grid3D& grid){
   #pragma omp parallel for
-  bndryGridLoop{
-    (*this)(i,j,k)=grid(i,j,k);
+  fastBndryLoop{
+      data[n]=grid.data[n];
   }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator+=(grid3D& grid){
   #pragma omp parallel for
-  bndryGridLoop{
-    (*this)(i,j,k)+=grid(i,j,k);
-  }
+  fastBndryLoop{
+      data[n]+=grid.data[n];
+    }
 }
 //-----------------------------------------------------------------------------
 void grid3D::operator-=(grid3D& grid){
   #pragma omp parallel for
-  bndryGridLoop{
-    (*this)(i,j,k)-=grid(i,j,k);
+  fastBndryLoop{
+      data[n]-=grid.data[n];
   }
 }
 //-----------------------------------------------------------------------------
