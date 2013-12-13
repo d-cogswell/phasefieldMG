@@ -402,7 +402,7 @@ void grid3D::dirichletBoundary(double c){
 //from the size of the coarse matrix
 grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   if (fine==NULL){
-    fine=new grid3D(Nx,Ny,Nz);
+    fine=new grid3D(Nx,Ny,Nz,boundary);
     fine->coarse=this;
   }
 
@@ -414,7 +414,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
 }
 grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
   if (fine==NULL){
-    fine=new grid3D(Nx,Ny,Nz);
+    fine=new grid3D(Nx,Ny,Nz,boundary);
     fine->coarse=this;
   }
 
@@ -432,7 +432,7 @@ grid3D* grid3D::restrict_FW(){
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
 
-    coarse=new grid3D(N2x,N2y,N2z);
+    coarse=new grid3D(N2x,N2y,N2z,boundary);
     coarse->fine=this;
   }
 
@@ -455,7 +455,7 @@ grid3D* grid3D::restrict_HW(){
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
 
-    coarse=new grid3D(N2x,N2y,N2z);
+    coarse=new grid3D(N2x,N2y,N2z,boundary);
     coarse->fine=this;
   }
 
@@ -476,7 +476,7 @@ grid3D* grid3D::injection(){
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
 
-    coarse=new grid3D(N2x,N2y,N2z);
+    coarse=new grid3D(N2x,N2y,N2z,boundary);
     coarse->fine=this;
   }
 
@@ -493,7 +493,7 @@ grid3D* grid3D::getCoarseGrid(){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
-    coarse=new grid3D(N2x,N2y,N2z);
+    coarse=new grid3D(N2x,N2y,N2z,boundary);
     coarse->fine=this;
   }
   return(coarse);
