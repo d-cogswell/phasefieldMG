@@ -504,7 +504,7 @@ double grid3D::l2_norm(){
   gridLoop{
       sum += sq((*this)(i,j,k));
   }
-  return(sqrt(sum));
+  return(sqrt(sum/(N1*N2*N3)));
 }
 //-----------------------------------------------------------------------------
 void grid3D::writeToFile(char* file){
