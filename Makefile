@@ -1,7 +1,7 @@
-TARGET = mse3D
+TARGET = phasefieldMG
 
 CXX = g++ 
-CXXFLAGS = -O3 -ffast-math
+CXXFLAGS = -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -O3 -ffast-math
 OBJECTS = main.o multigrid3D.o phasefield3DMG.o libgrid3D.a
 LIBS = `Magick++-config --libs` -L. -lgrid3D
 
