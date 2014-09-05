@@ -1,5 +1,7 @@
 #include <getopt.h>
+#include <Magick++.h>
 #include "multigrid3D.h"
+using namespace Magick;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){

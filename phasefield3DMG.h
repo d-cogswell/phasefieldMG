@@ -1,9 +1,6 @@
 #ifndef _PHASEFIELD3DMG_H_
 #define _PHASEFIELD3DMG_H_
-
-#include <Magick++.h>
 #include "grid3D.h"
-using namespace Magick;
 
 inline double clip(double n, double low, double high){
   return(n<low ? low : (n>high ? high : n));
