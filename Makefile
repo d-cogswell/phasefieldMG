@@ -1,7 +1,7 @@
 TARGET = phasefieldMG
 
 CXX = g++ 
-CXXFLAGS = -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -O3 -ffast-math
+CXXFLAGS = -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -O3 -ffast-math -march=native
 OBJECTS = main.cpp multigrid3D.cpp phasefield3DMG.cpp grid3D.cpp
 LIBS = `Magick++-config --libs`
 
