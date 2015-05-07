@@ -2,20 +2,36 @@
 
 double kappa=1.5;
 
+inline double dfdphi_c(double x){
+    return(cube(x));
+}
+
+inline double d2fdphi2_c(double x){
+    return(3*sq(x));
+}
+
+inline double dfdphi_e(double x){
+    return(-x);
+}
+
+
 /*The following functions solve the Allen-Cahn equation using Eyre's 
- *linearly stabilized splitting.*/
+ *nonlinearly stabilized splitting.
+ */
 //-----------------------------------------------------------------------------
 void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
   double D=dt*kappa/(h*h);
   u.periodicBoundary();
   gridLoop3D(u){
-    u(i,j,k)=(f(i,j,k)+D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))/(1+2*dt+4*D);
+    u(i,j,k)=(f(i,j,k)-dt*dfdphi_c(u(i,j,k))+dt*d2fdphi2_c(u(i,j,k))*u(i,j,k)
+            +D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))
+            /(1+dt*d2fdphi2_c(u(i,j,k))+4*D);
   }
   u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 inline double AC_LHS(grid3D& u, double dt, double h, int i, int j, int k){
-  return(u(i,j,k)+dt*(2*u(i,j,k)-kappa*u.laplacian(i,j,k,h)));
+  return(u(i,j,k)+dt*(dfdphi_c(u(i,j,k))-kappa*u.laplacian(i,j,k,h)));
 }
 //-----------------------------------------------------------------------------
 void dfct_AC(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
@@ -33,18 +49,19 @@ void d_plus_Nu_AC(grid3D& f, grid3D& d, grid3D& u,double dt, double h){
 //-----------------------------------------------------------------------------
 void f_AC(grid3D& f, grid3D& u, double dt, double h){ 
   gridLoop3D(f){
-    f(i,j,k)=u(i,j,k)+dt*(3*u(i,j,k)-cube(u(i,j,k)));
+    f(i,j,k)=u(i,j,k)-dt*dfdphi_e(u(i,j,k));
   }
 }
 //-----------------------------------------------------------------------------
-void L_AC(grid3D& L, int Nx, int Ny, double dt, double h){
+void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
   double D=dt*kappa/(h*h);
   L=0;
 
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      L(row,row,0)+=1+2*dt+4*D;
+      f(i,j,0)+=-dt*dfdphi_c(u(i,j,0))+dt*d2fdphi2_c(u(i,j,0))*u(i,j,0);
+      L(row,row,0)+=1+dt*d2fdphi2_c(u(i,j,0))+4*D;
       L(row,j*Nx+(i+1)%Nx,0)+=-D;
       L(row,j*Nx+(i+Nx-1)%Nx,0)+=-D;
       L(row,((j+1)%Ny)*Nx+i,0)+=-D;
