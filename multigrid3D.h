@@ -43,7 +43,7 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
     if (*L==NULL)
       *L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_CH(**L,Nx,Ny,dt,2*h);
+    L_CH(**L,e2h,d2h,Nx,Ny,dt,2*h);
     gaussian_elimination(**L,e2h,d2h);
   }
 
@@ -104,7 +104,7 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
     if (*L==NULL)
       *L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_CH(**L,Nx,Ny,dt,2*h);
+    L_CH(**L,w2h,f2h,Nx,Ny,dt,2*h);
     gaussian_elimination(**L,w2h,f2h);
   }
 

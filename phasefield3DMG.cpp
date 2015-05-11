@@ -14,6 +14,9 @@ inline double dfdphi_e(double x){
     return(-x);
 }
 
+double laplacian(double (*f)(double), grid3D& u, int i, int j, int k, double h){
+    return((f(u(i+1,j,k))+f(u(i-1,j,k))+f(u(i,j+1,k))+f(u(i,j-1,k))-4*f(u(i,j,k)))/sq(h));
+}
 
 /*The following functions solve the Allen-Cahn equation using Eyre's 
  *nonlinearly stabilized splitting.
@@ -71,25 +74,27 @@ void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
 
 
 /*The following functions solve the Cahn-Hilliard equation using Eyre's 
- *linearly stabilized splitting from "An Unconditionally Stable One-Step Scheme
- *for Gradient Systems".*/
+ *nonlinearly stabilized splitting from "An Unconditionally Stable One-Step 
+ * Scheme for Gradient Systems".
+ */
 //-----------------------------------------------------------------------------
 void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
   int Nx=u.getDimension(1);
   int Ny=u.getDimension(2);
 
-  double D=1+dt*(kappa*20/(h*h*h*h)+8/sq(h));
   gridLoop3D(u){
+    double D=1+dt*(kappa*20/(h*h*h*h)+4*d2fdphi2_c(u(i,j,k))/sq(h));
+    
     int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
     int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
 
-    u(i,j,k)=(-dt*(
+    u(i,j,k)=(f(i,j,k)-dt*(
       kappa/(h*h*h*h)*(
             -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
             +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
             +u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k))
-      -2/sq(h)*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
-      )+f(i,j,k))/D;
+      -(dfdphi_c(u(i1,j,k))+dfdphi_c(u(i_1,j,k))+dfdphi_c(u(i,j1,k))+dfdphi_c(u(i,j_1,k))
+            -4*(dfdphi_c(u(i,j,k))-d2fdphi2_c(u(i,j,k))*u(i,j,k)))/sq(h)))/D;
   }
   u.periodicBoundary();  
 }
@@ -104,7 +109,7 @@ inline double CH_LHS(grid3D& u, double dt, double h, int i, int j, int k){
         -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
         +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
         +(u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k)))
-      -2*u.laplacian(i,j,k,h));
+      -laplacian(dfdphi_c,u,i,j,k,h));
   return(LHS);
 }
 //-----------------------------------------------------------------------------
@@ -122,19 +127,12 @@ void d_plus_Nu_CH(grid3D& f, grid3D& d, grid3D& u, double dt, double h){
 }
 //-----------------------------------------------------------------------------
 void f_CH(grid3D& f, grid3D& u, double dt, double h){
-  grid3D u_cubed(u.N1,u.N2,u.N3);
-  gridLoop3D(u_cubed){
-    double u_val=u(i,j,k);
-    u_cubed(i,j,k)=cube(u_val);
-  }
-  u_cubed.periodicBoundary();
-
   gridLoop3D(f){
-    (f)(i,j,k)=u(i,j,k)+dt*(u_cubed.laplacian(i,j,k,h)-3*u.laplacian(i,j,k,h));
+    (f)(i,j,k)=u(i,j,k)+dt*laplacian(dfdphi_e,u,i,j,k,h);
   }
 }
 //-----------------------------------------------------------------------------
-void L_CH(grid3D& L, int Nx, int Ny, double dt, double h){
+void L_CH(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
   L=0;
 
   for (int i=0; i<Nx; ++i)
@@ -170,12 +168,18 @@ void L_CH(grid3D& L, int Nx, int Ny, double dt, double h){
   for (int i=0; i<Nx; ++i)
     for (int j=0; j<Ny; ++j){
       int row=j*Nx+i;
-      double fct=-2*dt/sq(h);
-      L(row,row,0)+=-4*fct;
-      L(row,j*Nx+(i+1)%Nx,0)+=fct;
-      L(row,j*Nx+(i+Nx-1)%Nx,0)+=fct;
-      L(row,((j+1)%Ny)*Nx+i,0)+=fct;
-      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=fct;
+      double fct=dt/sq(h);
+      f(i,j,0)+=(dfdphi_c(u(i+1,j,0))+dfdphi_c(u(i-1,j,0))
+                +dfdphi_c(u(i,j+1,0))+dfdphi_c(u(i,j-1,0))
+                -4*dfdphi_c(u(i,j,0))
+              -(d2fdphi2_c(u(i+1,j,0))*u(i+1,j,0)+d2fdphi2_c(u(i-1,j,0))*u(i-1,j,0)
+               +d2fdphi2_c(u(i,j+1,0))*u(i,j+1,0)+d2fdphi2_c(u(i,j-1,0))*u(i,j-1,0)
+               -4*d2fdphi2_c(u(i,j,0))*u(i,j,0)))*fct;
+      L(row,row,0)+=4*d2fdphi2_c(u(i,j,0))*fct;
+      L(row,j*Nx+(i+1)%Nx,0)+=-d2fdphi2_c(u(i+1,j,0))*fct;
+      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-d2fdphi2_c(u(i-1,j,0))*fct;
+      L(row,((j+1)%Ny)*Nx+i,0)+=-d2fdphi2_c(u(i,j+1,0))*fct;
+      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-d2fdphi2_c(u(i,j-1,0))*fct;
   }
 }
 
