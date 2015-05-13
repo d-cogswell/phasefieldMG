@@ -46,7 +46,7 @@ class grid3D{
  public:
   int N1,N2,N3,boundary;
   grid3D(int,int,int, int=1, double=0);
-  grid3D(char*,int=1, double=0, int=0, int=0, int=0, int=0, int=0, int=0);
+  grid3D(const char*,int=1, double=0, int=0, int=0, int=0, int=0, int=0, int=0);
   ~grid3D(void);
   void initializeRandom(double,double);
   void initializeGaussian(double);
@@ -73,9 +73,9 @@ class grid3D{
   grid3D* injection();
   grid3D* getCoarseGrid();
   double l2_norm();
-  void writeToFile(char*);
-  void writeToFile(char*,int);
-  void writeToFileDx(char*);
+  void writeToFile(const char*);
+  void writeToFile(const char*,int);
+  void writeToFileDx(const char*);
   double*** getGrid(){return(grid);}
   double* getPlane(int,int);
   inline int getDimension(int n){switch (n){case X_DIM: return(N1); case Y_DIM: return(N2); case Z_DIM: return(N3); case BND_DIM: return(boundary); case 4: return(N1_orig); case 5: return(N2_orig); case 6: return(N3_orig);};}

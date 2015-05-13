@@ -110,7 +110,7 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
 }
 //This function allows a grid3D object to be read from a file
 //-----------------------------------------------------------------------------
-grid3D::grid3D(char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset):boundary(bound){
+grid3D::grid3D(const char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset):boundary(bound){
   ifstream inFile(file, ios::in);
   inFile >> N1 >> N2 >> N3;
 
@@ -407,8 +407,8 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   }
 
   #pragma omp parallel for collapse(3)
-  gridLoop3D(*fine){ 
-    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,0);
+  gridLoop3D(*fine){
+    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,0); 
   }
   return(fine);
 }
@@ -507,11 +507,11 @@ double grid3D::l2_norm(){
   return(sqrt(sum/(N1*N2*N3)));
 }
 //-----------------------------------------------------------------------------
-void grid3D::writeToFile(char* file){
+void grid3D::writeToFile(const char* file){
   writeToFile(file, 0);
 }
 //-----------------------------------------------------------------------------
-void grid3D::writeToFile(char *file, int includeBndry){
+void grid3D::writeToFile(const char *file, int includeBndry){
   int ref_pt;
   ofstream outFile(file);
   
@@ -534,7 +534,7 @@ void grid3D::writeToFile(char *file, int includeBndry){
   outFile.close();
 }
 //-----------------------------------------------------------------------------
-void grid3D::writeToFileDx(char* file){
+void grid3D::writeToFileDx(const char* file){
   ofstream outFile(file);
 
   outFile << "object 1 class gridpositions counts " << N1 << " " << N2 << " " << N3 << "\n";
