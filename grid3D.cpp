@@ -92,7 +92,7 @@ double grid3D::cubic_z(double i, double j, double k){
 
 //-----------------------------------------------------------------------------
 grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
-:N1(n1),N2(n2),N3(n3),boundary(bound){
+:N1(n1),N2(n2),N3(n3),boundary(bound),coarse(NULL),fine(NULL){
 
   //Initialize default values for variables
   N1_orig=0;
@@ -101,16 +101,14 @@ grid3D::grid3D(int n1, int n2, int n3, int bound, double initialVal)
   warned_range=0;
   warned_bndry=0;
 
-  coarse=NULL;
-  fine=NULL;
-
   //Allocate space for the grid
   allocate(N1,N2,N3,boundary);
   (*this)=initialVal;
 }
 //This function allows a grid3D object to be read from a file
 //-----------------------------------------------------------------------------
-grid3D::grid3D(const char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset):boundary(bound){
+grid3D::grid3D(const char *file, int bound, double initialVal, int n1_inc, int n2_inc, int n3_inc, int n1_offset, int n2_offset, int n3_offset)
+:boundary(bound),coarse(NULL),fine(NULL){
   ifstream inFile(file, ios::in);
   inFile >> N1 >> N2 >> N3;
 
@@ -118,9 +116,6 @@ grid3D::grid3D(const char *file, int bound, double initialVal, int n1_inc, int n
   N1+=n1_inc;
   N2+=n2_inc;
   N3+=n3_inc;
-
-  coarse=NULL;
-  fine=NULL;
 
   allocate(N1,N2,N3,boundary);
   (*this)=initialVal;
@@ -401,7 +396,7 @@ void grid3D::dirichletBoundary(double c){
 //Dimensions for the fine matrix must be provided - they can't be determined
 //from the size of the coarse matrix
 grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
-  if (fine==NULL){
+  if (!fine){
     fine=new grid3D(Nx,Ny,Nz,boundary);
     fine->coarse=this;
   }
@@ -413,7 +408,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   return(fine);
 }
 grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
-  if (fine==NULL){
+  if (!fine){
     fine=new grid3D(Nx,Ny,Nz,boundary);
     fine->coarse=this;
   }
@@ -427,7 +422,7 @@ grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
 //-----------------------------------------------------------------------------
 //Restriction with the FW operator
 grid3D* grid3D::restrict_FW(){
-  if (coarse==NULL){
+  if (!coarse){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
@@ -450,7 +445,7 @@ grid3D* grid3D::restrict_FW(){
 //-----------------------------------------------------------------------------
 //Restriction with the HW operator
 grid3D* grid3D::restrict_HW(){
-  if (coarse==NULL){
+  if (!coarse){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
@@ -471,7 +466,7 @@ grid3D* grid3D::restrict_HW(){
 //-----------------------------------------------------------------------------
 //Restriction by injection
 grid3D* grid3D::injection(){
-  if (coarse==NULL){
+  if (!coarse){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;
@@ -489,7 +484,7 @@ grid3D* grid3D::injection(){
 }
 //-----------------------------------------------------------------------------
 grid3D* grid3D::getCoarseGrid(){
-  if (coarse==NULL){
+  if (!coarse){
     int N2x=(N1+1)/2;
     int N2y=(N2+1)/2;
     int N2z=(N3+1)/2;

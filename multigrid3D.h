@@ -6,15 +6,15 @@
 //Function definitions
 //-----------------------------------------------------------------------------
 template <class system>
-void multigrid(grid3D**,system&,system&,system&,system&,double,double,int,int=2,int=1);
+void multigrid(grid3D*,system&,system&,system&,system&,double,double,int,int=2,int=1);
 template <class system>
-void FAS_multigrid(grid3D**,system&,system&,system&,system&,system&,double,double,int,int=2,int=1);
+void FAS_multigrid(grid3D*,system&,system&,system&,system&,system&,double,double,int,int=2,int=1);
 void gaussian_elimination(grid3D&,grid3D&,grid3D&);
 
 //This is a recursive function that relaxes the error using 'max_level' grid
 //levels.   max_levels=2 corresponds to the two grid scheme.
 template <class system>
-void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt, double h, int gamma, int max_level, int level){
+void multigrid(grid3D* L, system& u, system& f, system& d, system& e, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of pre and post smoothing iterations
   int v1=1;
@@ -40,11 +40,11 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
     int Ny=e2h.N2;
 
     //Only allocate space for L once
-    if (*L==NULL)
-      *L = new grid3D(Nx*Ny,Nx*Ny,1);
+    if (!L)
+      L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_CH(**L,e2h,d2h,Nx,Ny,dt,2*h);
-    gaussian_elimination(**L,e2h,d2h);
+    L_CH(*L,e2h,d2h,Nx,Ny,dt,2*h);
+    gaussian_elimination(*L,e2h,d2h);
   }
 
   //Otherwise perform a coarse grid correction to solve for e2h
@@ -67,7 +67,7 @@ void multigrid(grid3D** L, system& u, system& f, system& d, system& e, double dt
 //This function applies the full approximation scheme for solving nonlinear problems
 //-----------------------------------------------------------------------------
 template <class system>
-void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, system& w, double dt, double h, int gamma, int max_level, int level){
+void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system& w, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of iterations on the fine grid and coarse grid
   int v1=1;
@@ -101,11 +101,11 @@ void FAS_multigrid(grid3D** L, system& u, system& f, system& d, system& v, syste
     int Ny=f2h.N2;
 
     //Only allocate space for L once
-    if (*L==NULL)
-      *L = new grid3D(Nx*Ny,Nx*Ny,1);
+    if (!L)
+      L = new grid3D(Nx*Ny,Nx*Ny,1);
 
-    L_CH(**L,w2h,f2h,Nx,Ny,dt,2*h);
-    gaussian_elimination(**L,w2h,f2h);
+    L_CH(*L,w2h,f2h,Nx,Ny,dt,2*h);
+    gaussian_elimination(*L,w2h,f2h);
   }
 
   //Otherwise perform a coarse grid correction

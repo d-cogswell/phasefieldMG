@@ -67,7 +67,7 @@ int main(int argc, char **argv){
     //multigrid
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<grid3D>(&L,u,f,d,v,w,dt,h,1,grids);
+        FAS_multigrid<grid3D>(L,u,f,d,v,w,dt,h,1,grids);
         dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 
