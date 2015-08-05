@@ -79,8 +79,8 @@ void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
  */
 //-----------------------------------------------------------------------------
 void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
-  int Nx=u.getDimension(1);
-  int Ny=u.getDimension(2);
+  int Nx=u.N1;
+  int Ny=u.N2;
 
   gridLoop3D(u){
     double D=1+dt*(kappa*20/(h*h*h*h)+4*d2fdphi2_c(u(i,j,k))/sq(h));
@@ -100,8 +100,8 @@ void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
 }
 //-----------------------------------------------------------------------------
 inline double CH_LHS(grid3D& u, double dt, double h, int i, int j, int k){
-  int Nx=u.getDimension(1);
-  int Ny=u.getDimension(2);
+  int Nx=u.N1;
+  int Ny=u.N2;
   int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
   int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
   double LHS=u(i,j,k)+dt*(

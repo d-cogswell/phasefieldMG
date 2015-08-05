@@ -1,9 +1,9 @@
 #include "multigrid3D.h"
 
 void gaussian_elimination(grid3D& L, grid3D& u, grid3D& f){
-  int N1=L.getDimension(1);
-  int N2=L.getDimension(2);
-  int Nx=u.getDimension(1);
+  int N1=L.N1;
+  int N2=L.N2;
+  int Nx=u.N1;
 
   //Convert f to a column vector
   grid3D f_col(N2,1,1);
