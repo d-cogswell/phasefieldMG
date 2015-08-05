@@ -14,14 +14,6 @@
 #include <math.h>
 using namespace std;
 
-#define X_DIM 1
-#define Y_DIM 2
-#define Z_DIM 3
-#define BND_DIM 7
-#define XY_PLANE 8
-#define XZ_PLANE 9
-#define YZ_PLANE 10
-
 //A macro for looping over a grid3D object
 //-----------------------------------------------------------------------------
 #define gridLoop3D(grid) for (int i=0; i<(grid).N1; ++i) for (int j=0; j<(grid).N2; ++j) for (int k=0; k<(grid).N3; ++k)
@@ -46,14 +38,13 @@ class grid3D{
  public:
   int N1,N2,N3,boundary;
   grid3D(int,int,int, int=1, double=0);
-  grid3D(const char*,int=1, double=0, int=0, int=0, int=0, int=0, int=0, int=0);
+  grid3D(const char*,int=1);
   ~grid3D(void);
   void initializeRandom(double,double);
   void initializeGaussian(double);
   void initializeSphere(double);
   double mean(void);
   double sum();
-  double squaredSum(int,int,int,int,int,int,int* = NULL);
   void periodicBoundary(void);
   void neumannBoundary(double);
   void dirichletBoundary(double);
@@ -77,9 +68,6 @@ class grid3D{
   void writeToFile(const char*,int);
   void writeToFileDx(const char*);
   double*** getGrid(){return(grid);}
-  double* getPlane(int,int);
-  inline int getDimension(int n){switch (n){case X_DIM: return(N1); case Y_DIM: return(N2); case Z_DIM: return(N3); case BND_DIM: return(boundary); case 4: return(N1_orig); case 5: return(N2_orig); case 6: return(N3_orig);};}
-  grid3D* select(int,int,int,int,int,int);
   inline double& operator()(int,int,int);
   inline double operator()(double,int,int);
   inline double operator()(int,double,int);
@@ -108,27 +96,11 @@ class grid3D{
   double cubic_x(double,double,double);
   double cubic_y(double,double,double);
   double cubic_z(double,double,double);
-  void neg_yAxisNeumannBoundary(double,int=0,int=0);
-  void pos_yAxisNeumannBoundary(double,int=0,int=0);
   void neg_yAxisDirichletBoundary(double,int=0,int=0);
   void pos_yAxisDirichletBoundary(double,int=0,int=0);
   void allocate(int,int,int,int);
-  void getPlane(double*,int,int,int=0,int=0);
-  void setPlane(double*,int,int,int=0,int=0);
   double*** grid;
   double* data;
-
-  /* N_inc variables are used to keep track of the initial size of the grid 
-   * that was read from the input file.  warned_range and warned_bndry are used
-   * to insure that particular warning messages are only displayed once to
-   * avoid filling output files with error messages.
-   */
- private:
-  int N1_orig;
-  int N2_orig;
-  int N3_orig;
-  int warned_range;
-  int warned_bndry;
 };
 
 //-----------------------------------------------------------------------------
