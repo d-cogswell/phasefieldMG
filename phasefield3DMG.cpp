@@ -22,15 +22,18 @@ double laplacian(double (*f)(double), grid3D& u, int i, int j, int k, double h){
  *nonlinearly stabilized splitting.
  */
 //-----------------------------------------------------------------------------
-void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
+inline void GS_AC_update(int i, int j, int k, grid3D& u, grid3D& f, double dt, double h){
   double D=dt*kappa/(h*h);
+  u(i,j,k)=(f(i,j,k)-dt*dfdphi_c(u(i,j,k))+dt*d2fdphi2_c(u(i,j,k))*u(i,j,k)
+          +D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))
+          /(1+dt*d2fdphi2_c(u(i,j,k))+4*D);
+}
+//-----------------------------------------------------------------------------
+void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
   u.periodicBoundary();
   gridLoop3D(u){
-    u(i,j,k)=(f(i,j,k)-dt*dfdphi_c(u(i,j,k))+dt*d2fdphi2_c(u(i,j,k))*u(i,j,k)
-            +D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))
-            /(1+dt*d2fdphi2_c(u(i,j,k))+4*D);
+    GS_AC_update(i,j,k,u,f,dt,h);
   }
-  u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 inline double AC_LHS(grid3D& u, double dt, double h, int i, int j, int k){
@@ -78,25 +81,29 @@ void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
  * Scheme for Gradient Systems".
  */
 //-----------------------------------------------------------------------------
-void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
+inline void GS_CH_update(int i, int j, int k, grid3D& u, grid3D& f, double dt, double h){
   int Nx=u.N1;
   int Ny=u.N2;
 
-  gridLoop3D(u){
-    double D=1+dt*(kappa*20/(h*h*h*h)+4*d2fdphi2_c(u(i,j,k))/sq(h));
-    
-    int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
-    int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
+  double D=1+dt*(kappa*20/(h*h*h*h)+4*d2fdphi2_c(u(i,j,k))/sq(h));
+  
+  int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
+  int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
 
-    u(i,j,k)=(f(i,j,k)-dt*(
-      kappa/(h*h*h*h)*(
-            -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
-            +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
-            +u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k))
-      -(dfdphi_c(u(i1,j,k))+dfdphi_c(u(i_1,j,k))+dfdphi_c(u(i,j1,k))+dfdphi_c(u(i,j_1,k))
-            -4*(dfdphi_c(u(i,j,k))-d2fdphi2_c(u(i,j,k))*u(i,j,k)))/sq(h)))/D;
+  u(i,j,k)=(f(i,j,k)-dt*(
+    kappa/(h*h*h*h)*(
+          -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
+          +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
+          +u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k))
+    -(dfdphi_c(u(i1,j,k))+dfdphi_c(u(i_1,j,k))+dfdphi_c(u(i,j1,k))+dfdphi_c(u(i,j_1,k))
+          -4*(dfdphi_c(u(i,j,k))-d2fdphi2_c(u(i,j,k))*u(i,j,k)))/sq(h)))/D;
+}
+//-----------------------------------------------------------------------------
+void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
+  u.periodicBoundary();
+  gridLoop3D(u){
+    GS_CH_update(i,j,k,u,f,dt,h);
   }
-  u.periodicBoundary();  
 }
 //-----------------------------------------------------------------------------
 inline double CH_LHS(grid3D& u, double dt, double h, int i, int j, int k){
