@@ -34,17 +34,7 @@ void multigrid(grid3D* L, system& u, system& f, system& d, system& e, double dt,
 
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
-
-     //Get the grid dimensions for the current level
-    int Nx=e2h.N1;
-    int Ny=e2h.N2;
-
-    //Only allocate space for L once
-    if (!L)
-      L = new grid3D(Nx*Ny,Nx*Ny,1);
-
-    L_CH(*L,e2h,d2h,Nx,Ny,dt,2*h);
-    gaussian_elimination(*L,e2h,d2h);
+    GS_LEX_CH(e2h,d2h,dt,2*h);
   }
 
   //Otherwise perform a coarse grid correction to solve for e2h
@@ -95,17 +85,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
 
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
-
-    //Get the grid dimensions for the current level
-    int Nx=f2h.N1;
-    int Ny=f2h.N2;
-
-    //Only allocate space for L once
-    if (!L)
-      L = new grid3D(Nx*Ny,Nx*Ny,1);
-
-    L_CH(*L,w2h,f2h,Nx,Ny,dt,2*h);
-    gaussian_elimination(*L,w2h,f2h);
+    GS_LEX_CH(w2h,f2h,dt,2*h);
   }
 
   //Otherwise perform a coarse grid correction

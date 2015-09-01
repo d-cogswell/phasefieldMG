@@ -1,6 +1,7 @@
 #ifndef _PHASEFIELD3DMG_H_
 #define _PHASEFIELD3DMG_H_
 #include "grid3D.h"
+#include "systm.h"
 
 inline double clip(double n, double low, double high){
   return(n<low ? low : (n>high ? high : n));
@@ -14,10 +15,10 @@ void d_plus_Nu_AC(grid3D&, grid3D&, grid3D&, double, double);
 void f_AC(grid3D&, grid3D&, double, double);
 void L_AC(grid3D&, grid3D&, grid3D&, int, int, double, double);
 
-void GS_LEX_CH(grid3D&, grid3D&, double, double);
-void dfct_CH(grid3D&, grid3D&, grid3D&, double, double);
-void d_plus_Nu_CH(grid3D&, grid3D&, grid3D&, double, double);
-void f_CH(grid3D&, grid3D&, double, double);
+void GS_LEX_CH(systm&, systm&, double, double);
+void dfct_CH(systm&, systm&, systm&, double, double);
+void d_plus_Nu_CH(systm&, systm&, systm&, double, double);
+void f_CH(systm&, systm&, double, double);
 void L_CH(grid3D&, grid3D&, grid3D&, int, int, double, double);
 
 void GS_LEX_heat_eqn(grid3D&, grid3D&, double, double);
@@ -25,6 +26,10 @@ void dfct_heat_eqn(grid3D&, grid3D&, grid3D&, double, double);
 void d_plus_Nu_heat_eqn(grid3D&, grid3D&, grid3D&, double, double);
 void L_heat_eqn(grid3D&, int, int, double, double);
 void f_heat_eqn(grid3D&, grid3D&, double, double);
+
+inline double laplacian_RHS(grid3D& u, int i, int j, int k, double h){
+  return((u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)+u(i,j,k+1)+u(i,j,k-1))/sq(h));
+}
 
 //Anisotropy: 1+e4*cos(4*theta)
 #define e4 .025

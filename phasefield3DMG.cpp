@@ -1,21 +1,20 @@
 #include "phasefield3DMG.h"
 
-double kappa=1.5;
+double gama=1.1547;
+double delta=3.4641;
+double kappa=3*delta*gama/8;
+double W=3*gama/delta;
 
 inline double dfdphi_c(double x){
-    return(cube(x));
+    return(W*(cube(x)));
 }
 
 inline double d2fdphi2_c(double x){
-    return(3*sq(x));
+    return(W*(3*sq(x)));
 }
 
 inline double dfdphi_e(double x){
-    return(-x);
-}
-
-double laplacian(double (*f)(double), grid3D& u, int i, int j, int k, double h){
-    return((f(u(i+1,j,k))+f(u(i-1,j,k))+f(u(i,j+1,k))+f(u(i,j-1,k))-4*f(u(i,j,k)))/sq(h));
+    return(W*(-x));
 }
 
 /*The following functions solve the Allen-Cahn equation using Eyre's 
@@ -82,62 +81,57 @@ void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
  * Scheme for Gradient Systems".
  */
 //-----------------------------------------------------------------------------
-inline void GS_CH_update(int i, int j, int k, grid3D& u, grid3D& f, double dt, double h){
-  int Nx=u.N1;
-  int Ny=u.N2;
-
-  double D=1+dt*(kappa*20/(h*h*h*h)+4*d2fdphi2_c(u(i,j,k))/sq(h));
+inline void GS_CH_update(int i, int j, int k, systm& u, systm& f, double dt, double h){
+  double A11=1;
+  double A12=dt/sq(h)*6;
+  double A21=-d2fdphi2_c(u.phi(i,j,k))-6*kappa/sq(h);
+  double A22=1;
   
-  int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
-  int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
-
-  u(i,j,k)=(f(i,j,k)-dt*(
-    kappa/(h*h*h*h)*(
-          -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
-          +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
-          +u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k))
-    -(dfdphi_c(u(i1,j,k))+dfdphi_c(u(i_1,j,k))+dfdphi_c(u(i,j1,k))+dfdphi_c(u(i,j_1,k))
-          -4*(dfdphi_c(u(i,j,k))-d2fdphi2_c(u(i,j,k))*u(i,j,k)))/sq(h)))/D;
+  double f1=f.phi(i,j,k)+dt*laplacian_RHS(u.mu,i,j,k,h);
+  double f2=f.mu(i,j,k)+dfdphi_c(u.phi(i,j,k))-d2fdphi2_c(u.phi(i,j,k))*u.phi(i,j,k)
+    -kappa*laplacian_RHS(u.phi,i,j,k,h);
+  
+  //solve Au=f;
+  double det=A11*A22-A12*A21;
+  u.phi(i,j,k)=(A22*f1-A12*f2)/det;
+  u.mu(i,j,k)=(-A21*f1+A11*f2)/det;
 }
 //-----------------------------------------------------------------------------
-void GS_LEX_CH(grid3D& u, grid3D& f, double dt, double h){
+void GS_LEX_CH(systm& u, systm& f, double dt, double h){
   u.periodicBoundary();
   gridLoop3D(u){
     GS_CH_update(i,j,k,u,f,dt,h);
   }
 }
 //-----------------------------------------------------------------------------
-inline double CH_LHS(grid3D& u, double dt, double h, int i, int j, int k){
-  int Nx=u.N1;
-  int Ny=u.N2;
-  int i1=(i+1)%Nx, i2=(i+2)%Nx, i_1=(i+Nx-1)%Nx, i_2=(i+Nx-2)%Nx;
-  int j1=(j+1)%Ny, j2=(j+2)%Ny, j_1=(j+Ny-1)%Ny, j_2=(j+Ny-2)%Ny;
-  double LHS=u(i,j,k)+dt*(
-      kappa/(h*h*h*h)*(20*u(i,j,k)
-        -8*(u(i1,j,k)+u(i_1,j,k)+u(i,j1,k)+u(i,j_1,k))
-        +2*(u(i1,j1,k)+u(i_1,j_1,k)+u(i1,j_1,k)+u(i_1,j1,k))
-        +(u(i2,j,k)+u(i_2,j,k)+u(i,j2,k)+u(i,j_2,k)))
-      -laplacian(dfdphi_c,u,i,j,k,h));
-  return(LHS);
+inline double CH_phi_LHS(systm& u, double dt, double h, int i, int j, int k){
+  return(u.phi(i,j,k)-dt*u.mu.laplacian(i,j,k,h));
+}
+inline double CH_mu_LHS(systm& u, double dt, double h, int i, int j, int k){
+  return(u.mu(i,j,k)-dfdphi_c(u.phi(i,j,k))+kappa*u.phi.laplacian(i,j,k,h));
 }
 //-----------------------------------------------------------------------------
-void dfct_CH(grid3D& d, grid3D& u, grid3D& f,double dt, double h){
+void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
+  u.periodicBoundary();
   gridLoop3D(d){
-    d(i,j,k)=f(i,j,k)-CH_LHS(u,dt,h,i,j,k);
+    d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
+    d.mu(i,j,k)=f.mu(i,j,k)-CH_mu_LHS(u,dt,h,i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
-void d_plus_Nu_CH(grid3D& f, grid3D& d, grid3D& u, double dt, double h){
+void d_plus_Nu_CH(systm& f, systm& d, systm& u, double dt, double h){
   u.periodicBoundary();
   gridLoop3D(f){
-    f(i,j,k)=d(i,j,k)+CH_LHS(u,dt,h,i,j,k);
+    f.phi(i,j,k)=d.phi(i,j,k)+CH_phi_LHS(u,dt,h,i,j,k);
+    f.mu(i,j,k)=d.mu(i,j,k)+CH_mu_LHS(u,dt,h,i,j,k);
   }
 }
 //-----------------------------------------------------------------------------
-void f_CH(grid3D& f, grid3D& u, double dt, double h){
+void f_CH(systm& f, systm& u, double dt, double h){
   u.periodicBoundary();
   gridLoop3D(f){
-    (f)(i,j,k)=u(i,j,k)+dt*laplacian(dfdphi_e,u,i,j,k,h);
+    f.phi(i,j,k)=u.phi(i,j,k);
+    f.mu(i,j,k)=dfdphi_e(u.phi(i,j,k));
   }
 }
 //-----------------------------------------------------------------------------
