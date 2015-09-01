@@ -9,13 +9,13 @@ inline double clip(double n, double low, double high){
 
 //Function definitions
 //-----------------------------------------------------------------------------
-void GS_LEX_AC(grid3D&, grid3D&, double, double);
+void GS_RB_AC(grid3D&, grid3D&, double, double);
 void dfct_AC(grid3D&, grid3D&, grid3D&, double, double);
 void d_plus_Nu_AC(grid3D&, grid3D&, grid3D&, double, double);
 void f_AC(grid3D&, grid3D&, double, double);
 void L_AC(grid3D&, grid3D&, grid3D&, int, int, double, double);
 
-void GS_LEX_CH(systm&, systm&, double, double);
+void GS_RB_CH(systm&, systm&, double, double);
 void dfct_CH(systm&, systm&, systm&, double, double);
 void d_plus_Nu_CH(systm&, systm&, systm&, double, double);
 void f_CH(systm&, systm&, double, double);

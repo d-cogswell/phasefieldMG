@@ -28,10 +28,23 @@ inline void GS_AC_update(int i, int j, int k, grid3D& u, grid3D& f, double dt, d
           /(1+dt*d2fdphi2_c(u(i,j,k))+4*D);
 }
 //-----------------------------------------------------------------------------
-void GS_LEX_AC(grid3D& u, grid3D& f, double dt, double h){
+void GS_RB_AC(grid3D& u, grid3D& f, double dt, double h){
   u.periodicBoundary();
-  gridLoop3D(u){
-    GS_AC_update(i,j,k,u,f,dt,h);
+  
+  //Red
+  #pragma omp parallel for collapse(2)
+  for (int i=0; i<u.N1; ++i){
+    for (int k=0; k<u.N3; ++k)
+      for (int j=i%2; j<u.N2; j+=2)
+        GS_AC_update(i,j,0,u,f,dt,h);
+  }
+
+  //Black
+  #pragma omp parallel for collapse(2)
+  for (int i=0; i<u.N1; ++i){
+    for (int k=0; k<u.N3; ++k)
+      for (int j=(i+1)%2; j<u.N2; j+=2)
+        GS_AC_update(i,j,0,u,f,dt,h);
   }
 }
 //-----------------------------------------------------------------------------
@@ -97,10 +110,23 @@ inline void GS_CH_update(int i, int j, int k, systm& u, systm& f, double dt, dou
   u.mu(i,j,k)=(-A21*f1+A11*f2)/det;
 }
 //-----------------------------------------------------------------------------
-void GS_LEX_CH(systm& u, systm& f, double dt, double h){
+void GS_RB_CH(systm& u, systm& f, double dt, double h){
   u.periodicBoundary();
-  gridLoop3D(u){
-    GS_CH_update(i,j,k,u,f,dt,h);
+  
+  //Red
+  #pragma omp parallel for collapse(2)
+  for (int i=0; i<u.N1; ++i){
+    for (int k=0; k<u.N3; ++k)
+      for (int j=(i+k)%2; j<u.N2; j+=2)
+        GS_CH_update(i,j,k,u,f,dt,h);
+  }
+    
+  //Black
+  #pragma omp parallel for collapse(2)
+  for (int i=0; i<u.N1; ++i){
+    for (int k=0; k<u.N3; ++k)
+      for (int j=(i+k+1)%2; j<u.N2; j+=2)
+        GS_CH_update(i,j,k,u,f,dt,h);
   }
 }
 //-----------------------------------------------------------------------------

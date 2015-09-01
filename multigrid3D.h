@@ -65,7 +65,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
 
   //Presmoothing
   for (int i=0;i<v1;++i)
-    GS_LEX_CH(u,f,dt,h);
+    GS_RB_CH(u,f,dt,h);
   
   //Compute the defect
   dfct_CH(d,u,f,dt,h);
@@ -85,7 +85,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
 
   //Direct solve on the coarsest mesh
   if (level==max_level-1){
-    GS_LEX_CH(w2h,f2h,dt,2*h);
+    GS_RB_CH(w2h,f2h,dt,2*h);
   }
 
   //Otherwise perform a coarse grid correction
@@ -106,7 +106,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
 
   //Postsmoothing
   for (int i=0;i<v2;++i)
-    GS_LEX_CH(u,f,dt,h);
+    GS_RB_CH(u,f,dt,h);
 }
 
 #endif

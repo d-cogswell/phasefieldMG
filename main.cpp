@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <getopt.h>
 #include <Magick++.h>
 #include "multigrid3D.h"
@@ -13,6 +14,8 @@ int main(int argc, char **argv){
   int iterations=100;
   int outputEvery=10;
 
+  printf("Max threads: %i\n",omp_get_max_threads());
+  
   char* filename;
   grid3D* initial_condition;
   grid3D* L = NULL;
