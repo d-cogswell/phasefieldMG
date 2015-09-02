@@ -99,7 +99,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
   v2h-=u2h;  
   
   //Prolongate the error to the fine mesh
-  v2h.prolongate(v.N1,v.N2);
+  v2h.prolongate(v.N1,v.N2,v.N3);
 
   //Compute the corrected approximation
   u+=v;

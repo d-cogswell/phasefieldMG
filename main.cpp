@@ -7,7 +7,7 @@ using namespace Magick;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
-  int Nx=129,Ny=129;
+  int Nx=129,Ny=129,Nz=1;
   int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2))-1;
   double h=1;
   double dt=1;
@@ -39,11 +39,11 @@ int main(int argc, char **argv){
 
   if (!inputFileSupplied){
     printf("No input file supplied!\n");
-    initial_condition = new grid3D(Nx,Ny,1);
+    initial_condition = new grid3D(Nx,Ny,Nz);
     initial_condition->initializeGaussian(.01);
   }
 
-  systm u(Nx,Ny,1), f(Nx,Ny,1), d(Nx,Ny,1), v(Nx,Ny,1), w(Nx,Ny,1);
+  systm u(Nx,Ny,Nz), f(Nx,Ny,Nz), d(Nx,Ny,Nz), v(Nx,Ny,Nz), w(Nx,Ny,Nz);
   u.phi=*initial_condition;
   
   //Performs semi-implicit timestepping

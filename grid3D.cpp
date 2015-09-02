@@ -330,7 +330,7 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*fine){
-    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,0); 
+    (*fine)(i,j,k)=(*this)((double)i/2,(double)j/2,(double)k/2); 
   }
   return(fine);
 }
@@ -342,7 +342,7 @@ grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*fine){
-    (*fine)(i,j,k)=cubic((double)i/2,(double)j/2,0); 
+    (*fine)(i,j,k)=cubic((double)i/2,(double)j/2,(double)k/2); 
   }
   return(fine);
 }
@@ -360,11 +360,20 @@ grid3D* grid3D::restrict_FW(){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
-    (*coarse)(i,j,0)=1./16*(4*(*this)(2*i,2*j,0)
-     +2*(*this)(2*i+1,2*j,0)+2*(*this)(2*i-1,2*j,0)
-     +2*(*this)(2*i,2*j+1,0)+2*(*this)(2*i,2*j-1,0)
-     +(*this)(2*i+1,2*j+1,0)+(*this)(2*i-1,2*j-1,0)
-     +(*this)(2*i+1,2*j-1,0)+(*this)(2*i-1,2*j+1,0));
+    (*coarse)(i,j,k)=1./64*(8*(*this)(2*i,2*j,2*k)
+     +4*((*this)(2*i+1,2*j,2*k)+(*this)(2*i-1,2*j,2*k)
+        +(*this)(2*i,2*j+1,2*k)+(*this)(2*i,2*j-1,2*k)
+        +(*this)(2*i,2*j,2*k+1)+(*this)(2*i,2*j,2*k-1))
+     +2*((*this)(2*i+1,2*j+1,2*k)+(*this)(2*i-1,2*j-1,2*k)
+        +(*this)(2*i+1,2*j-1,2*k)+(*this)(2*i-1,2*j+1,2*k)
+        +(*this)(2*i+1,2*j,2*k+1)+(*this)(2*i-1,2*j,2*k-1)
+        +(*this)(2*i+1,2*j,2*k-1)+(*this)(2*i-1,2*j,2*k+1)
+        +(*this)(2*i,2*j+1,2*k+1)+(*this)(2*i,2*j-1,2*k-1)
+        +(*this)(2*i,2*j+1,2*k-1)+(*this)(2*i,2*j-1,2*k+1))
+      +(*this)(2*i+1,2*j+1,2*k+1)+(*this)(2*i-1,2*j-1,2*k-1)
+      +(*this)(2*i-1,2*j+1,2*k+1)+(*this)(2*i+1,2*j-1,2*k-1)
+      +(*this)(2*i+1,2*j-1,2*k+1)+(*this)(2*i-1,2*j+1,2*k-1)
+      +(*this)(2*i+1,2*j+1,2*k-1)+(*this)(2*i-1,2*j-1,2*k+1));
   }
   
   return(coarse);
@@ -383,9 +392,10 @@ grid3D* grid3D::restrict_HW(){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
-    (*coarse)(i,j,0)=1./8*(4*(*this)(2*i,2*j,0)
-     +(*this)(2*i+1,2*j,0)+(*this)(2*i-1,2*j,0)
-     +(*this)(2*i,2*j+1,0)+(*this)(2*i,2*j-1,0));
+    (*coarse)(i,j,k)=1./12*(6*(*this)(2*i,2*j,2*k)
+     +(*this)(2*i+1,2*j,2*k)+(*this)(2*i-1,2*j,2*k)
+     +(*this)(2*i,2*j+1,2*k)+(*this)(2*i,2*j-1,2*k)
+     +(*this)(2*i,2*j,2*k+1)+(*this)(2*i,2*j,2*k-1));
   }
   
   return(coarse);
@@ -404,7 +414,7 @@ grid3D* grid3D::injection(){
 
   #pragma omp parallel for collapse(3)
   gridLoop3D(*coarse){
-    (*coarse)(i,j,0)=(*this)(2*i,2*j,0);
+    (*coarse)(i,j,k)=(*this)(2*i,2*j,2*k);
   }
   
   return(coarse);
