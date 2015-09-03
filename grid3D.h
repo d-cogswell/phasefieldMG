@@ -71,6 +71,7 @@ class grid3D{
   inline double& operator()(int,int,int);
   inline double operator()(double,int,int);
   inline double operator()(int,double,int);
+  inline double operator()(int,int,double);
   inline double operator()(double,double,int);
   inline double operator()(double,double,double);
   inline double cubic(double,double,double);
@@ -117,6 +118,11 @@ double grid3D::operator()(double i, int j, int k){
 double grid3D::operator()(int i, double j, int k){
     int j0=floor(j);
     return(j==j0 ? operator()(i,j0,k) : Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
+}
+
+double grid3D::operator()(int i, int j, double k){
+    int k0=floor(k);
+    return(k==k0 ? operator()(i,j,k0) : Lint(k-k0,operator()(i,j,k0),operator()(i,j,k0+1)));
 }
 
 double grid3D::operator()(double i, double j, int k){
