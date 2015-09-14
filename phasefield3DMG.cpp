@@ -2,19 +2,19 @@
 
 double gama=1.1547;
 double delta=3.4641;
-double kappa=3*delta*gama/8;
-double W=3*gama/delta;
+double kappa=3*delta*gama/2;
+double W=12*gama/delta;
 
 inline double dfdphi_c(double x){
-    return(W*(cube(x)));
+	return(W*.5*cube(2*x-1));
 }
 
 inline double d2fdphi2_c(double x){
-    return(W*(3*sq(x)));
+	return(W*3*sq(2*x-1));
 }
 
 inline double dfdphi_e(double x){
-    return(W*(-x));
+	return(W*(.5-x));
 }
 
 /*The following functions solve the Allen-Cahn equation using Eyre's 

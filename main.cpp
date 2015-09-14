@@ -10,7 +10,7 @@ int main(int argc, char **argv){
   int Nx=129,Ny=129,Nz=1;
   int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2))-1;
   double h=1;
-  double dt=1;
+  double dt=.25;
   int iterations=100;
   int outputEvery=10;
 
@@ -44,7 +44,9 @@ int main(int argc, char **argv){
   }
 
   systm u(Nx,Ny,Nz), f(Nx,Ny,Nz), d(Nx,Ny,Nz), v(Nx,Ny,Nz), w(Nx,Ny,Nz);
-  u.phi=*initial_condition;
+  gridLoop3D(u){
+    u.phi(i,j,k)=.5+.5*(*initial_condition)(i,j,k);
+  }
   
   //Performs semi-implicit timestepping
   for (int t=0; t<=iterations; ++t){
@@ -55,7 +57,7 @@ int main(int argc, char **argv){
       sprintf(outFile,"%s/p%6.6i.jpg",outDir,t);
       printf("writing output: %s\n", outFile);
       gridLoop3D(u){
-        double val=(1+u.phi(i,j,0))/2;
+        double val=u.phi(i,j,0);
         val=MaxRGB*clip(val,0,1);
         img.pixelColor(i,j,Color(val,val,val,0));
       }
