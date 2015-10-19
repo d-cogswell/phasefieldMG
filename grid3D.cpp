@@ -108,9 +108,12 @@ grid3D::grid3D(const char *file, int bound)
   allocate(N1,N2,N3,boundary);
 
   //Read in the grid from file handle
-  gridLoop{
-    inFile >> (*this)(i,j,k);
-  }
+  for (int k=0; k<N3; ++k)
+    for (int j=0; j<N2; ++j)
+      for (int i=0; i<N1; ++i){
+        inFile >> (*this)(i,j,k);
+      }
+  
   inFile.close();
 }
 
