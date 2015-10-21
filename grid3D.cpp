@@ -337,6 +337,28 @@ grid3D* grid3D::prolongate(int Nx, int Ny, int Nz){
   }
   return(fine);
 }
+grid3D* grid3D::prolongate_CC(int Nx, int Ny, int Nz){
+  if (!fine){
+    fine=new grid3D(Nx,Ny,Nz,boundary);
+    fine->coarse=this;
+  }
+
+  #pragma omp parallel for collapse(3)
+//  gridLoop3D(*fine){
+//    (*fine)(i,j,k)=(*this)((int)i/2,(int)j/2,(int)k/2); 
+//  }
+  gridLoop3D(*this){
+    (*fine)(2*i,2*j,2*k)=(*this)((double)i-.25,(double)j-.25,(double)k-.25);
+    (*fine)(2*i+1,2*j,2*k)=(*this)((double)i+.25,(double)j-.25,(double)k-.25);
+    (*fine)(2*i,2*j+1,2*k)=(*this)((double)i-.25,(double)j+.25,(double)k-.25);
+    (*fine)(2*i,2*j,2*k+1)=(*this)((double)i-.25,(double)j-.25,(double)k+.25);
+    (*fine)(2*i,2*j+1,2*k+1)=(*this)((double)i-.25,(double)j+.25,(double)k+.25);
+    (*fine)(2*i+1,2*j,2*k+1)=(*this)((double)i+.25,(double)j-.25,(double)k+.25);
+    (*fine)(2*i+1,2*j+1,2*k)=(*this)((double)i+.25,(double)j+.25,(double)k-.25);
+    (*fine)(2*i+1,2*j+1,2*k+1)=(*this)((double)i+.25,(double)j+.25,(double)k+.25);
+  }
+  return(fine);
+}
 grid3D* grid3D::prolongate_cubic(int Nx, int Ny, int Nz){
   if (!fine){
     fine=new grid3D(Nx,Ny,Nz,boundary);
@@ -399,6 +421,27 @@ grid3D* grid3D::restrict_HW(){
      +(*this)(2*i+1,2*j,2*k)+(*this)(2*i-1,2*j,2*k)
      +(*this)(2*i,2*j+1,2*k)+(*this)(2*i,2*j-1,2*k)
      +(*this)(2*i,2*j,2*k+1)+(*this)(2*i,2*j,2*k-1));
+  }
+  
+  return(coarse);
+}
+//-----------------------------------------------------------------------------
+grid3D* grid3D::restrict_CC(){
+  if (!coarse){
+    int N2x=(N1+1)/2;
+    int N2y=(N2+1)/2;
+    int N2z=(N3+1)/2;
+
+    coarse=new grid3D(N2x,N2y,N2z,boundary);
+    coarse->fine=this;
+  }
+
+  #pragma omp parallel for collapse(3)
+  gridLoop3D(*coarse){
+    (*coarse)(i,j,k)=1./8*((*this)(2*i,2*j,2*k)
+      +(*this)(2*i+1,2*j,2*k)+(*this)(2*i,2*j+1,2*k)+(*this)(2*i,2*j,2*k+1)
+      +(*this)(2*i,2*j+1,2*k+1)+(*this)(2*i+1,2*j,2*k+1)+(*this)(2*i+1,2*j+1,2*k)
+      +(*this)(2*i+1,2*j+1,2*k+1));
   }
   
   return(coarse);

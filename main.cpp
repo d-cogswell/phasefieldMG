@@ -7,8 +7,8 @@ using namespace Magick;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
-  int Nx=129,Ny=129,Nz=1;
-  int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2))-1;
+  int Nx=128,Ny=128,Nz=1;
+  int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2));
   double h=1;
   double dt=.25;
   int iterations=100;

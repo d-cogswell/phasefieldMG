@@ -15,7 +15,9 @@ class systm {
   ~systm();
   double l2_norm();
   systm* prolongate(int,int,int=1);
+  systm* prolongate_CC(int,int,int=1);
   systm* restrict_FW();
+  systm* restrict_CC();
   systm* injection();
   void periodicBoundary();
   systm* getCoarseGrid();

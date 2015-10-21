@@ -58,9 +58,11 @@ class grid3D{
   void yAxisDirichletBoundary(double,int=1,int=1);
   void zAxisDirichletBoundary(double,int=1,int=1);
   grid3D* prolongate(int,int,int=1);
+  grid3D* prolongate_CC(int,int,int=1);
   grid3D* prolongate_cubic(int,int,int=1);
   grid3D* restrict_FW();
   grid3D* restrict_HW();
+  grid3D* restrict_CC();
   grid3D* injection();
   grid3D* getCoarseGrid();
   double l2_norm();

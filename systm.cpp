@@ -37,10 +37,36 @@ systm* systm::prolongate(int Nx, int Ny, int Nz){
   return(fine);
 }
 
+systm* systm::prolongate_CC(int Nx, int Ny, int Nz){
+  grid3D *phi2h, *mu2h;
+  phi2h=phi.prolongate_CC(Nx,Ny,Nz);
+  mu2h=mu.prolongate_CC(Nx,Ny,Nz);
+
+  if (!fine){
+    fine = new systm(phi2h,mu2h);
+    fine->coarse=this;
+  }
+  
+  return(fine);
+}
+
 systm* systm::restrict_FW(){
   grid3D *phi2h, *mu2h;
   phi2h=phi.restrict_FW();
   mu2h=mu.restrict_FW();
+  
+  if (!coarse){
+    coarse = new systm(phi2h,mu2h);
+    coarse->fine=this;
+  }
+
+  return(coarse);
+}
+
+systm* systm::restrict_CC(){
+  grid3D *phi2h, *mu2h;
+  phi2h=phi.restrict_CC();
+  mu2h=mu.restrict_CC();
   
   if (!coarse){
     coarse = new systm(phi2h,mu2h);

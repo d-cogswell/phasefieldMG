@@ -71,8 +71,8 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
   dfct_CH(d,u,f,dt,h);
   
   //Restrict the defect and smoothed u
-  system& d2h=*d.restrict_FW();
-  system& u2h=*u.injection();
+  system& d2h=*d.restrict_CC();
+  system& u2h=*u.restrict_CC();
   system& v2h=*v.getCoarseGrid();
   system& w2h=*w.getCoarseGrid();
 
@@ -99,7 +99,7 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
   v2h-=u2h;  
   
   //Prolongate the error to the fine mesh
-  v2h.prolongate(v.N1,v.N2,v.N3);
+  v2h.prolongate_CC(v.N1,v.N2,v.N3);
 
   //Compute the corrected approximation
   u+=v;
