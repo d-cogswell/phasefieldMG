@@ -53,9 +53,11 @@ inline double AC_LHS(grid3D& u, double dt, double h, int i, int j, int k){
 }
 //-----------------------------------------------------------------------------
 void dfct_AC(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
+  u.periodicBoundary();
   gridLoop3D(d){
     d(i,j,k)=f(i,j,k)-AC_LHS(u,dt,h,i,j,k);
   }
+  d.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 void d_plus_Nu_AC(grid3D& f, grid3D& d, grid3D& u,double dt, double h){
@@ -143,6 +145,7 @@ void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
     d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
     d.mu(i,j,k)=f.mu(i,j,k)-CH_mu_LHS(u,dt,h,i,j,k);
   }
+  d.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 void d_plus_Nu_CH(systm& f, systm& d, systm& u, double dt, double h){
