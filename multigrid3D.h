@@ -8,7 +8,7 @@
 template <class system>
 void multigrid(grid3D*,system&,system&,system&,system&,double,double,int,int=2,int=1);
 template <class system>
-void FAS_multigrid(grid3D*,system&,system&,system&,system&,system&,double,double,int,int=2,int=1);
+void FAS_multigrid(grid3D*,system&,system&,system&,system&,double,double,int,int=2,int=1);
 void gaussian_elimination(grid3D&,grid3D&,grid3D&);
 
 //This is a recursive function that relaxes the error using 'max_level' grid
@@ -57,7 +57,7 @@ void multigrid(grid3D* L, system& u, system& f, system& d, system& e, double dt,
 //This function applies the full approximation scheme for solving nonlinear problems
 //-----------------------------------------------------------------------------
 template <class system>
-void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system& w, double dt, double h, int gamma, int max_level, int level){
+void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& w, double dt, double h, int gamma, int max_level, int level){
 
   //Set number of iterations on the fine grid and coarse grid
   int v1=1;
@@ -73,7 +73,6 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
   //Restrict the defect and smoothed u
   system& d2h=*d.restrict_CC();
   system& u2h=*u.restrict_CC();
-  system& v2h=*v.getCoarseGrid();
   system& w2h=*w.getCoarseGrid();
 
   //Compute the RHS
@@ -91,18 +90,18 @@ void FAS_multigrid(grid3D* L, system& u, system& f, system& d, system& v, system
   //Otherwise perform a coarse grid correction
   else{
     for (int i=gamma;i>0;--i)
-      FAS_multigrid<system>(L,w2h,f2h,d2h,v2h,u2h,dt,2*h,i,max_level,level+1);
+      FAS_multigrid<system>(L,w2h,f2h,d2h,u2h,dt,2*h,i,max_level,level+1);
   }
 
   //Compute the coarse grid correction
-  v2h=w2h;
-  v2h-=u2h;  
+  d2h=w2h;
+  d2h-=u2h;  
   
   //Prolongate the error to the fine mesh
-  v2h.prolongate_CC(v.N1,v.N2,v.N3);
+  d2h.prolongate_CC(d.N1,d.N2,d.N3);
 
   //Compute the corrected approximation
-  u+=v;
+  u+=d;
 
   //Postsmoothing
   for (int i=0;i<v2;++i)

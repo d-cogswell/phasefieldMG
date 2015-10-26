@@ -43,7 +43,7 @@ int main(int argc, char **argv){
     initial_condition->initializeGaussian(.01);
   }
 
-  systm u(Nx,Ny,Nz), f(Nx,Ny,Nz), d(Nx,Ny,Nz), v(Nx,Ny,Nz), w(Nx,Ny,Nz);
+  systm u(Nx,Ny,Nz), f(Nx,Ny,Nz), d(Nx,Ny,Nz), w(Nx,Ny,Nz);
   gridLoop3D(u){
     u.phi(i,j,k)=.5+.5*(*initial_condition)(i,j,k);
   }
@@ -71,7 +71,7 @@ int main(int argc, char **argv){
     double error=1;
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<systm>(L,u,f,d,v,w,dt,h,1,grids);
+        FAS_multigrid<systm>(L,u,f,d,w,dt,h,1,grids);
         dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 
