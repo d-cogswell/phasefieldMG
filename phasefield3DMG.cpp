@@ -141,6 +141,7 @@ inline double CH_mu_LHS(systm& u, double dt, double h, int i, int j, int k){
 //-----------------------------------------------------------------------------
 void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
   u.periodicBoundary();
+  #pragma omp parallel for collapse(3)
   gridLoop3D(d){
     d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
     d.mu(i,j,k)=f.mu(i,j,k)-CH_mu_LHS(u,dt,h,i,j,k);
@@ -150,6 +151,7 @@ void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
 //-----------------------------------------------------------------------------
 void d_plus_Nu_CH(systm& f, systm& d, systm& u, double dt, double h){
   u.periodicBoundary();
+  #pragma omp parallel for collapse(3)
   gridLoop3D(f){
     f.phi(i,j,k)=d.phi(i,j,k)+CH_phi_LHS(u,dt,h,i,j,k);
     f.mu(i,j,k)=d.mu(i,j,k)+CH_mu_LHS(u,dt,h,i,j,k);
@@ -158,6 +160,7 @@ void d_plus_Nu_CH(systm& f, systm& d, systm& u, double dt, double h){
 //-----------------------------------------------------------------------------
 void f_CH(systm& f, systm& u, double dt, double h){
   u.periodicBoundary();
+  #pragma omp parallel for collapse(3)
   gridLoop3D(f){
     f.phi(i,j,k)=u.phi(i,j,k);
     f.mu(i,j,k)=dfdphi_e(u.phi(i,j,k));
