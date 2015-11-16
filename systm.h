@@ -19,6 +19,8 @@ class systm {
   systm* restrict_FW();
   systm* restrict_CC();
   systm* injection();
+  void dirichletBoundary(double);
+  void neumannBoundary(double);
   void periodicBoundary();
   systm* getCoarseGrid();
   void operator=(const double);

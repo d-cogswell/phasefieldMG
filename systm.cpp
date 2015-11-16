@@ -89,6 +89,16 @@ systm* systm::injection(){
   return(coarse);
 }
 
+void systm::dirichletBoundary(double c){
+  phi.dirichletBoundary(c);
+  mu.dirichletBoundary(c);
+}
+
+void systm::neumannBoundary(double nh){
+  phi.neumannBoundary(nh);
+  mu.neumannBoundary(nh);
+}
+
 void systm::periodicBoundary(){
   phi.periodicBoundary();
   mu.periodicBoundary();
