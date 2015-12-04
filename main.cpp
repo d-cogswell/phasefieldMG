@@ -7,8 +7,8 @@ using namespace Magick;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
-  int Nx=128,Ny=128,Nz=1;
-  int grids=(int)(log(Nx>Ny ? Nx : Ny)/log(2));
+  int Nx=1,Ny=128,Nz=128;
+  int grids=(int)(log(Ny>Nz ? Ny : Nz)/log(2));
   double h=1;
   double dt=.25;
   int iterations=100;
@@ -20,7 +20,7 @@ int main(int argc, char **argv){
   grid3D* initial_condition;
   grid3D* L = NULL;
   int option_char;
-  Image img(Geometry(Nx,Ny),"black");
+  Image img(Geometry(Ny,Nz),"black");
   const char* outDir="output";
 
   // Handle command line options
@@ -57,9 +57,9 @@ int main(int argc, char **argv){
       sprintf(outFile,"%s/p%6.6i.jpg",outDir,t);
       printf("writing output: %s\n", outFile);
       gridLoop3D(u){
-        double val=u.phi(i,j,0);
+        double val=u.phi(0,j,k);
         val=MaxRGB*clip(val,0,1);
-        img.pixelColor(i,j,Color(val,val,val,0));
+        img.pixelColor(j,k,Color(val,val,val,0));
       }
       img.write(outFile);
     }

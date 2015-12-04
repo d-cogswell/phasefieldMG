@@ -22,10 +22,8 @@ inline double dfdphi_e(double x){
  */
 //-----------------------------------------------------------------------------
 inline void GS_AC_update(int i, int j, int k, grid3D& u, grid3D& f, double dt, double h){
-  double D=dt*kappa/(h*h);
   u(i,j,k)=(f(i,j,k)-dt*dfdphi_c(u(i,j,k))+dt*d2fdphi2_c(u(i,j,k))*u(i,j,k)
-          +D*(u(i+1,j,k)+u(i-1,j,k)+u(i,j+1,k)+u(i,j-1,k)))
-          /(1+dt*d2fdphi2_c(u(i,j,k))+4*D);
+          +dt*kappa*laplacian_RHS(u,i,j,k,h))/(1+dt*d2fdphi2_c(u(i,j,k))+6*dt*kappa/sq(h));
 }
 //-----------------------------------------------------------------------------
 void GS_RB_AC(grid3D& u, grid3D& f, double dt, double h){
@@ -34,17 +32,17 @@ void GS_RB_AC(grid3D& u, grid3D& f, double dt, double h){
   //Red
   #pragma omp parallel for collapse(2)
   for (int i=0; i<u.N1; ++i){
-    for (int k=0; k<u.N3; ++k)
-      for (int j=i%2; j<u.N2; j+=2)
-        GS_AC_update(i,j,0,u,f,dt,h);
+    for (int j=0; j<u.N2; ++j)
+      for (int k=(i+j)%2; k<u.N3; k+=2)
+        GS_AC_update(i,j,k,u,f,dt,h);
   }
 
   //Black
   #pragma omp parallel for collapse(2)
   for (int i=0; i<u.N1; ++i){
-    for (int k=0; k<u.N3; ++k)
-      for (int j=(i+1)%2; j<u.N2; j+=2)
-        GS_AC_update(i,j,0,u,f,dt,h);
+    for (int j=0; j<u.N2; ++j)
+      for (int k=(i+j+1)%2; k<u.N3; k+=2)
+        GS_AC_update(i,j,k,u,f,dt,h);
   }
 }
 //-----------------------------------------------------------------------------
@@ -118,16 +116,16 @@ void GS_RB_CH(systm& u, systm& f, double dt, double h){
   //Red
   #pragma omp parallel for collapse(2)
   for (int i=0; i<u.N1; ++i){
-    for (int k=0; k<u.N3; ++k)
-      for (int j=(i+k)%2; j<u.N2; j+=2)
+    for (int j=0; j<u.N2; ++j)
+      for (int k=(i+j)%2; k<u.N3; k+=2)
         GS_CH_update(i,j,k,u,f,dt,h);
   }
     
   //Black
   #pragma omp parallel for collapse(2)
   for (int i=0; i<u.N1; ++i){
-    for (int k=0; k<u.N3; ++k)
-      for (int j=(i+k+1)%2; j<u.N2; j+=2)
+    for (int j=0; j<u.N2; ++j)
+      for (int k=(i+j+1)%2; k<u.N3; k+=2)
         GS_CH_update(i,j,k,u,f,dt,h);
   }
 }
