@@ -44,6 +44,8 @@ void GS_RB_AC(grid3D& u, grid3D& f, double dt, double h){
       for (int k=(i+j+1)%2; k<u.N3; k+=2)
         GS_AC_update(i,j,k,u,f,dt,h);
   }
+  
+  u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 inline double AC_LHS(grid3D& u, double dt, double h, int i, int j, int k){
@@ -51,7 +53,6 @@ inline double AC_LHS(grid3D& u, double dt, double h, int i, int j, int k){
 }
 //-----------------------------------------------------------------------------
 void dfct_AC(grid3D& d, grid3D& u, grid3D& f, double dt, double h){
-  u.periodicBoundary();
   gridLoop3D(d){
     d(i,j,k)=f(i,j,k)-AC_LHS(u,dt,h,i,j,k);
   }
@@ -128,6 +129,8 @@ void GS_RB_CH(systm& u, systm& f, double dt, double h){
       for (int k=(i+j+1)%2; k<u.N3; k+=2)
         GS_CH_update(i,j,k,u,f,dt,h);
   }
+  
+  u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
 inline double CH_phi_LHS(systm& u, double dt, double h, int i, int j, int k){
@@ -138,7 +141,6 @@ inline double CH_mu_LHS(systm& u, double dt, double h, int i, int j, int k){
 }
 //-----------------------------------------------------------------------------
 void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
-  u.periodicBoundary();
   #pragma omp parallel for collapse(3)
   gridLoop3D(d){
     d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
