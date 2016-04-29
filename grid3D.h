@@ -93,6 +93,7 @@ class grid3D{
   void operator=(grid3D&);
   void operator+=(grid3D&);
   void operator-=(grid3D&);
+  void operator*=(const double);
   grid3D *coarse, *fine;
 
  protected:
