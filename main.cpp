@@ -8,11 +8,14 @@ using namespace Magick;
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
   int Nx=1,Ny=128,Nz=128;
-  int grids=(int)(log(Ny>Nz ? Ny : Nz)/log(2));
   double h=1;
   double dt=.25;
   int iterations=100;
   int outputEvery=10;
+
+  //Find the max dimension and use it to calculate the number of grid levels
+  int max = Nx>Ny ? (Nx>Nz ? Nx : Nz) : Ny>Nz ? Ny : Nz;
+  int grids=(int)(log(max)/log(2));
 
   printf("Max threads: %i\n",omp_get_max_threads());
   
