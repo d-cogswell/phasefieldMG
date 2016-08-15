@@ -1,9 +1,9 @@
 TARGET = phasefieldMG
 
 CXX = g++ 
-CXXFLAGS = -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16 -fopenmp -O3 -march=native
+CXXFLAGS = -fopenmp -O3 -march=native
 OBJECTS = main.cpp phasefield3DMG.cpp systm.cpp grid3D.cpp
-LIBS = `Magick++-config --libs`
+LIBS = `Magick++-config --cxxflags --libs`
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)
