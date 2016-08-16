@@ -231,44 +231,26 @@ void grid3D::zAxisPeriodicBoundary(int ext1, int ext2){
 }
 //-----------------------------------------------------------------------------
 void grid3D::xAxisNeumannBoundary(double nh, int ext1, int ext2){
-
-  //If the dimension in this direction is 1, set periodic boundaries instead
-  if (N1==1)
-    xAxisPeriodicBoundary();
-  else{
-    for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
-      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(-1,j,k)=(*this)(0,j,k)-nh;
-        (*this)(N1,j,k)=nh+(*this)(N1-1,j,k);
-      }
-  }
+  for (int j=-boundary*ext1; j<N2+boundary*ext1; j++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(-1,j,k)=(*this)(0,j,k)-nh;
+      (*this)(N1,j,k)=nh+(*this)(N1-1,j,k);
+    }
 }
 
 void grid3D::yAxisNeumannBoundary(double nh, int ext1, int ext2){
-
-  //If the dimension in this direction is 1, set periodic boundaries instead
-  if (N2==1)
-    yAxisPeriodicBoundary();
-  else{
-    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-      for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
-        (*this)(i,-1,k)=(*this)(i,0,k)-nh;
-        (*this)(i,N2,k)=nh+(*this)(i,N2-1,k);
-      }
-  }
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int k=-boundary*ext2; k<N3+boundary*ext2; k++){
+      (*this)(i,-1,k)=(*this)(i,0,k)-nh;
+      (*this)(i,N2,k)=nh+(*this)(i,N2-1,k);
+    }
 }
 
 void grid3D::zAxisNeumannBoundary(double nh, int ext1, int ext2){
-
-  //If the dimension in this direction is 1, set periodic boundaries instead
-  if (N3==1)
-    zAxisPeriodicBoundary();
-  else{
-    for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
-      for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
-        (*this)(i,j,-1)=(*this)(i,j,0)-nh;
-        (*this)(i,j,N3)=nh+(*this)(i,j,N3-1);
-    }
+  for (int i=-boundary*ext1; i<N1+boundary*ext1; i++)
+    for (int j=-boundary*ext2; j<N2+boundary*ext2; j++){
+      (*this)(i,j,-1)=(*this)(i,j,0)-nh;
+      (*this)(i,j,N3)=nh+(*this)(i,j,N3-1);
   }
 }
 
