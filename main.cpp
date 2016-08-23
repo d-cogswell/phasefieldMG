@@ -61,7 +61,7 @@ int main(int argc, char **argv){
       printf("writing output: %s\n", outFile);
       gridLoop3D(u){
         double val=u.phi(0,j,k);
-        val=MaxRGB*clip(val,0,1);
+        val=QuantumRange*clip(val,0,1);
         img.pixelColor(j,k,Color(val,val,val,0));
       }
       img.write(outFile);
