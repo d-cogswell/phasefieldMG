@@ -10,8 +10,8 @@
 #define _GRID3D_H_
 
 #include <fstream>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
+#include <cmath>
 using namespace std;
 
 //A macro for looping over a grid3D object
