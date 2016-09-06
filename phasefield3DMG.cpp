@@ -95,7 +95,8 @@ void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
  * Scheme for Gradient Systems".
  */
 //-----------------------------------------------------------------------------
-inline void GS_CH_update(int i, int j, int k, systm& u, systm& f, double dt, double h){
+#pragma omp declare simd uniform(u,f,dt,h,i,j) //linear(i:1,j:1,k:1)
+void GS_CH_update(int i, int j, int k, systm& u, systm& f, double dt, double h){
   double A11=1;
   double A12=dt/sq(h)*6;
   double A21=-d2fdphi2_c(u.phi(i,j,k))-6*kappa/sq(h);
@@ -133,19 +134,25 @@ void GS_RB_CH(systm& u, systm& f, double dt, double h){
   u.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
+#pragma omp declare simd uniform(u,dt,h,i,j) //linear(i:1,j:1,k:1)
 inline double CH_phi_LHS(systm& u, double dt, double h, int i, int j, int k){
   return(u.phi(i,j,k)-dt*u.mu.laplacian(i,j,k,h));
 }
+
+#pragma omp declare simd uniform(u,dt,h,i,j) //linear(i:1,j:1,k:1)
 inline double CH_mu_LHS(systm& u, double dt, double h, int i, int j, int k){
   return(u.mu(i,j,k)-dfdphi_c(u.phi(i,j,k))+kappa*u.phi.laplacian(i,j,k,h));
 }
 //-----------------------------------------------------------------------------
 void dfct_CH(systm& d, systm& u, systm& f,double dt, double h){
-  #pragma omp parallel for collapse(3)
-  gridLoop3D(d){
-    d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
-    d.mu(i,j,k)=f.mu(i,j,k)-CH_mu_LHS(u,dt,h,i,j,k);
-  }
+  #pragma omp parallel for collapse(2)
+  for (int i=0;i<d.N1;++i)
+    for (int j=0;j<d.N2;++j)
+      #pragma omp simd
+      for (int k=0;k<d.N3;++k){
+        d.phi(i,j,k)=f.phi(i,j,k)-CH_phi_LHS(u,dt,h,i,j,k);
+        d.mu(i,j,k)=f.mu(i,j,k)-CH_mu_LHS(u,dt,h,i,j,k);
+      }
   d.periodicBoundary();
 }
 //-----------------------------------------------------------------------------
