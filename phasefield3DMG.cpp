@@ -72,22 +72,6 @@ void f_AC(grid3D& f, grid3D& u, double dt, double h){
     f(i,j,k)=u(i,j,k)-dt*dfdphi_e(u(i,j,k));
   }
 }
-//-----------------------------------------------------------------------------
-void L_AC(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
-  double D=dt*kappa/(h*h);
-  L=0;
-
-  for (int i=0; i<Nx; ++i)
-    for (int j=0; j<Ny; ++j){
-      int row=j*Nx+i;
-      f(i,j,0)+=-dt*dfdphi_c(u(i,j,0))+dt*d2fdphi2_c(u(i,j,0))*u(i,j,0);
-      L(row,row,0)+=1+dt*d2fdphi2_c(u(i,j,0))+4*D;
-      L(row,j*Nx+(i+1)%Nx,0)+=-D;
-      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-D;
-      L(row,((j+1)%Ny)*Nx+i,0)+=-D;
-      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-D;
-  }
-}
 
 
 /*The following functions solve the Cahn-Hilliard equation using Eyre's 
@@ -173,55 +157,3 @@ void f_CH(systm& f, systm& u, double dt, double h){
     f.mu(i,j,k)=dfdphi_e(u.phi(i,j,k));
   }
 }
-//-----------------------------------------------------------------------------
-void L_CH(grid3D& L, grid3D& u, grid3D& f, int Nx, int Ny, double dt, double h){
-  L=0;
-
-  for (int i=0; i<Nx; ++i)
-    for (int j=0; j<Ny; ++j){
-      int row=j*Nx+i;
-      L(row,row,0)+=1;
-  }
-
-  //4th derivative term
-  for (int i=0; i<Nx; ++i)
-    for (int j=0; j<Ny; ++j){
-      int row=j*Nx+i;
-      double fct=dt*kappa/(h*h*h*h);
-      L(row,row,0)+=20*fct;
-
-      L(row,j*Nx+(i+1)%Nx,0)+=-8*fct;
-      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-8*fct;
-      L(row,((j+1)%Ny)*Nx+i,0)+=-8*fct;
-      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-8*fct;
-
-      L(row,j*Nx+(i+2)%Nx,0)+=fct;
-      L(row,j*Nx+(i+Nx-2)%Nx,0)+=fct;
-      L(row,((j+2)%Ny)*Nx+i,0)+=fct;
-      L(row,((j+Ny-2)%Ny)*Nx+i,0)+=fct;
-
-      L(row,((j+1)%Ny)*Nx+(i+1)%Nx,0)+=2*fct;
-      L(row,((j+1)%Ny)*Nx+(i+Nx-1)%Nx,0)+=2*fct;
-      L(row,((j+Ny-1)%Ny)*Nx+(i+1)%Nx,0)+=2*fct;
-      L(row,((j+Ny-1)%Ny)*Nx+(i+Nx-1)%Nx,0)+=2*fct;
-  }
-
-  //Laplacian term
-  for (int i=0; i<Nx; ++i)
-    for (int j=0; j<Ny; ++j){
-      int row=j*Nx+i;
-      double fct=dt/sq(h);
-      f(i,j,0)+=(dfdphi_c(u(i+1,j,0))+dfdphi_c(u(i-1,j,0))
-                +dfdphi_c(u(i,j+1,0))+dfdphi_c(u(i,j-1,0))
-                -4*dfdphi_c(u(i,j,0))
-              -(d2fdphi2_c(u(i+1,j,0))*u(i+1,j,0)+d2fdphi2_c(u(i-1,j,0))*u(i-1,j,0)
-               +d2fdphi2_c(u(i,j+1,0))*u(i,j+1,0)+d2fdphi2_c(u(i,j-1,0))*u(i,j-1,0)
-               -4*d2fdphi2_c(u(i,j,0))*u(i,j,0)))*fct;
-      L(row,row,0)+=4*d2fdphi2_c(u(i,j,0))*fct;
-      L(row,j*Nx+(i+1)%Nx,0)+=-d2fdphi2_c(u(i+1,j,0))*fct;
-      L(row,j*Nx+(i+Nx-1)%Nx,0)+=-d2fdphi2_c(u(i-1,j,0))*fct;
-      L(row,((j+1)%Ny)*Nx+i,0)+=-d2fdphi2_c(u(i,j+1,0))*fct;
-      L(row,((j+Ny-1)%Ny)*Nx+i,0)+=-d2fdphi2_c(u(i,j-1,0))*fct;
-  }
-}
-

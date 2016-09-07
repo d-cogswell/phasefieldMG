@@ -21,7 +21,6 @@ int main(int argc, char **argv){
   
   char* filename;
   grid3D* initial_condition;
-  grid3D* L = NULL;
   int option_char;
   Image img(Geometry(Ny,Nz),"black");
   const char* outDir="output";
@@ -74,7 +73,7 @@ int main(int argc, char **argv){
     double error=1;
     if (t<iterations){
       while (error>1.e-4){
-        FAS_multigrid<systm>(L,u,f,d,w,dt,h,1,grids);
+        FAS_multigrid<systm>(u,f,d,w,dt,h,1,grids);
         dfct_CH(d,u,f,dt,h);
         error=d.l2_norm();
 
@@ -86,6 +85,6 @@ int main(int argc, char **argv){
     }
   }
 
-  delete initial_condition,L;
+  delete initial_condition;
   return 0;
 }
