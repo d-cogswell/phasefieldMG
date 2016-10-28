@@ -519,6 +519,46 @@ void grid3D::writeToFileDx(const char* file){
   outFile.close();
 }
 //-----------------------------------------------------------------------------
+void grid3D::writeToFileNc(const char* file){
+  
+  int ncid, x_dimid, y_dimid, z_dimid, varid;
+  int dimids[3], retval, i, j, k;
+  
+  if (retval = nc_create(file, NC_CLOBBER, &ncid))
+     ERR(retval);
+
+  if (retval = nc_def_dim(ncid, "x", N1, &x_dimid))
+    ERR(retval);
+  if (retval = nc_def_dim(ncid, "y", N2, &y_dimid))
+    ERR(retval);
+  if (retval = nc_def_dim(ncid, "z", N3, &z_dimid))
+    ERR(retval);
+  
+  dimids[0] = x_dimid;
+  dimids[1] = y_dimid;
+  dimids[2] = z_dimid;
+
+  if (retval = nc_def_var(ncid, "density", NC_FLOAT, 3, dimids, &varid))
+    ERR(retval);
+
+  if (retval = nc_enddef(ncid))
+    ERR(retval);
+  
+  //Because of boundaries on grid3D, write to the file as a series of vectors
+  //along the z-dimension.
+  for (size_t i=0;i<N1;++i){
+    for (size_t j=0;j<N2;++j){
+      size_t start[3]={i,j,0};
+      size_t count[3]={1,1,(size_t)N3};
+      if (retval = nc_put_vara_double(ncid, varid, start, count, &grid[i][j][0]))
+        ERR(retval);
+    }
+  }
+  
+  if (retval = nc_close(ncid))
+    ERR(retval);
+}
+//-----------------------------------------------------------------------------
 void grid3D::operator=(const double value){
   #pragma omp parallel for
   fastBndryLoop{

@@ -12,7 +12,11 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
+#include <netcdf.h>
 using namespace std;
+
+#define ERRCODE 2
+#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
 
 //A macro for looping over a grid3D object
 //-----------------------------------------------------------------------------
@@ -69,6 +73,7 @@ class grid3D{
   void writeToFile(const char*);
   void writeToFile(const char*,int);
   void writeToFileDx(const char*);
+  void writeToFileNc(const char*);
   double*** getGrid(){return(grid);}
   inline double& operator()(int,int,int);
   inline double operator()(double,int,int);
