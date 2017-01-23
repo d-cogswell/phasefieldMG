@@ -94,9 +94,9 @@ void systm::dirichletBoundary(double c){
   mu.dirichletBoundary(c);
 }
 
-void systm::neumannBoundary(double nh){
-  phi.neumannBoundary(nh);
-  mu.neumannBoundary(nh);
+void systm::neumannBoundary(){
+  phi.neumannBoundary();
+  mu.neumannBoundary();
 }
 
 void systm::periodicBoundary(){

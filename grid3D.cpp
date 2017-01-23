@@ -254,10 +254,10 @@ void grid3D::zAxisNeumannBoundary(double nh, int ext1, int ext2){
   }
 }
 
-void grid3D::neumannBoundary(double nh){
-  xAxisNeumannBoundary(nh);
-  yAxisNeumannBoundary(nh);
-  zAxisNeumannBoundary(nh);
+void grid3D::neumannBoundary(){
+  xAxisNeumannBoundary(0);
+  yAxisNeumannBoundary(0);
+  zAxisNeumannBoundary(0);
 }
 //-----------------------------------------------------------------------------
 void grid3D::xAxisDirichletBoundary(double c, int ext1, int ext2){

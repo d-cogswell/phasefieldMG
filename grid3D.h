@@ -50,7 +50,7 @@ class grid3D{
   double mean(void);
   double sum();
   void periodicBoundary(void);
-  void neumannBoundary(double);
+  void neumannBoundary(void);
   void dirichletBoundary(double);
   void xAxisPeriodicBoundary(int=0,int=0);
   void yAxisPeriodicBoundary(int=0,int=0);

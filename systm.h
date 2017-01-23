@@ -20,7 +20,7 @@ class systm {
   systm* restrict_CC();
   systm* injection();
   void dirichletBoundary(double);
-  void neumannBoundary(double);
+  void neumannBoundary();
   void periodicBoundary();
   systm* getCoarseGrid();
   void operator=(const double);
