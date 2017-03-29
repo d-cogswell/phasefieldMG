@@ -326,18 +326,12 @@ grid3D* grid3D::prolongate_CC(int Nx, int Ny, int Nz){
   }
 
   #pragma omp parallel for collapse(3)
-//  gridLoop3D(*fine){
-//    (*fine)(i,j,k)=(*this)((int)i/2,(int)j/2,(int)k/2); 
-//  }
-  gridLoop3D(*this){
-    (*fine)(2*i,2*j,2*k)=(*this)((double)i-.25,(double)j-.25,(double)k-.25);
-    (*fine)(2*i+1,2*j,2*k)=(*this)((double)i+.25,(double)j-.25,(double)k-.25);
-    (*fine)(2*i,2*j+1,2*k)=(*this)((double)i-.25,(double)j+.25,(double)k-.25);
-    (*fine)(2*i,2*j,2*k+1)=(*this)((double)i-.25,(double)j-.25,(double)k+.25);
-    (*fine)(2*i,2*j+1,2*k+1)=(*this)((double)i-.25,(double)j+.25,(double)k+.25);
-    (*fine)(2*i+1,2*j,2*k+1)=(*this)((double)i+.25,(double)j-.25,(double)k+.25);
-    (*fine)(2*i+1,2*j+1,2*k)=(*this)((double)i+.25,(double)j+.25,(double)k-.25);
-    (*fine)(2*i+1,2*j+1,2*k+1)=(*this)((double)i+.25,(double)j+.25,(double)k+.25);
+  gridLoop3D(*fine){
+    //Injection
+//    (*fine)(i,j,k)=(*this)((int)i/2,(int)j/2,(int)k/2);
+    
+    //Bilinear interpolation
+    (*fine)(i,j,k)=(*this)((double)i/2-.25,(double)j/2-.25,(double)k/2-.25);
   }
   return(fine);
 }
