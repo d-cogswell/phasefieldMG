@@ -66,12 +66,16 @@ int main(int argc, char **argv){
       img.write(outFile);
     }
 
-    //Create f
-    f_CH(f,u,dt,h);
-
-    //multigrid
-    double error=1;
     if (t<iterations){
+      
+      //Create f
+      f_CH(f,u,dt,h);
+      
+      //Compute initial error
+      dfct_CH(d,u,f,dt,h);
+      double error=d.l2_norm();
+      
+      //multigrid
       while (error>1.e-4){
         FAS_multigrid<systm>(u,f,d,w,dt,h,1,grids);
         dfct_CH(d,u,f,dt,h);
