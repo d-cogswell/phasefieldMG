@@ -118,46 +118,36 @@ double& grid3D::operator()(int i, int j, int k){
   return(grid[i][j][k]);
 }
 
+//Bilinear interpolation
+//-----------------------------------------------------------------------------
 double grid3D::operator()(double i, int j, int k){
-    int i0=floor(i);
-    return(i==i0 ? operator()(i0,j,k) : Lint(i-i0,operator()(i0,j,k),operator()(i0+1,j,k)));
+  int i0=floor(i);
+  return(Lint(i-i0,operator()(i0,j,k),operator()(i0+1,j,k)));
 }
 
 double grid3D::operator()(int i, double j, int k){
-    int j0=floor(j);
-    return(j==j0 ? operator()(i,j0,k) : Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
+  int j0=floor(j);
+  return(Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
 }
 
 double grid3D::operator()(int i, int j, double k){
-    int k0=floor(k);
-    return(k==k0 ? operator()(i,j,k0) : Lint(k-k0,operator()(i,j,k0),operator()(i,j,k0+1)));
+  int k0=floor(k);
+  return(Lint(k-k0,operator()(i,j,k0),operator()(i,j,k0+1)));
 }
 
 double grid3D::operator()(double i, double j, int k){
-  int i0=floor(i);
   int j0=floor(j);
-  
-  if (i==i0)
-    return(operator()(i0,j,k));
-  else if (j==j0)
-    return(operator()(i,j0,k));
-  
   return(Lint(j-j0,operator()(i,j0,k),operator()(i,j0+1,k)));
 }
 
 //Trilinear interpolation
 double grid3D::operator()(double i, double j, double k){
-  int i0=floor(i);
-  int j0=floor(j);
   int k0=floor(k);
-
-  if (k==k0)
-    return(operator()(i,j,k0));
-
   return(Lint(k-k0,operator()(i,j,k0),operator()(i,j,k0+1)));
 }
 
 //Tricubic interpolation
+//-----------------------------------------------------------------------------
 double grid3D::cubic(double i, double j, double k){
   int i0=(int)i;
   int j0=(int)j;
