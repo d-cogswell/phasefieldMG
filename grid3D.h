@@ -1,11 +1,3 @@
-/* 
- * Copyright (c) 2006, Daniel A. Cogswell
- * Department of Materials Science and Engineering
- * Massachusetts Institute of Technology
- * 
- * This program not intended for distribution without the consent of the author.
- */
-
 #ifndef _GRID3D_H_
 #define _GRID3D_H_
 
