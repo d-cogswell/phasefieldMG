@@ -20,7 +20,7 @@ int main(int argc, char **argv){
   char* filename;
   grid3D* initial_condition;
   int option_char;
-  const char* outDir="output";
+  const char* outDir="";
 
   // Handle command line options
   bool inputFileSupplied=false;
@@ -53,7 +53,10 @@ int main(int argc, char **argv){
     //Write output, if necessary
     char outFile[128];
     if (!(t%outputEvery)){
-      sprintf(outFile,"%s/p%6.6i.nc",outDir,t);
+      if (outDir[0] == '\0')
+        sprintf(outFile,"p%6.6i.nc",t);
+      else
+        sprintf(outFile,"%s/p%6.6i.nc",outDir,t);
       printf("writing output: %s\n", outFile);
       u.phi.writeToFileNc(outFile);
     }
