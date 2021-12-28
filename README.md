@@ -10,7 +10,7 @@ This repository hosts code for solving phase-field models (and other PDE's) usin
 Requirements:
 
 * C/C++ compiler
-* Magick++ ([http://www.imagemagick.org/Magick++/](http://www.imagemagick.org/Magick++/))
+* [NetCDF](https://www.unidata.ucar.edu/software/netcdf/)
 
 ### Contribution guidelines ###
 

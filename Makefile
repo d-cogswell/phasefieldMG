@@ -3,7 +3,7 @@ TARGET = phasefieldMG
 CXX = g++ 
 CXXFLAGS = -fopenmp -O3 -march=native
 OBJECTS = main.o phasefield3DMG.o systm.o grid3D.o
-LIBS = `Magick++-config --cxxflags --libs` -lnetcdf
+LIBS = -lnetcdf
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LIBS) -o $(TARGET)

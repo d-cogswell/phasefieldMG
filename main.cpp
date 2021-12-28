@@ -1,9 +1,7 @@
 #include <omp.h>
 #include <getopt.h>
-#include <Magick++.h>
 #include "multigrid3D.h"
 #include "systm.h"
-using namespace Magick;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char **argv){
@@ -22,7 +20,6 @@ int main(int argc, char **argv){
   char* filename;
   grid3D* initial_condition;
   int option_char;
-  Image img(Geometry(Ny,Nz),"black");
   const char* outDir="output";
 
   // Handle command line options
@@ -56,14 +53,9 @@ int main(int argc, char **argv){
     //Write output, if necessary
     char outFile[128];
     if (!(t%outputEvery)){
-      sprintf(outFile,"%s/p%6.6i.jpg",outDir,t);
+      sprintf(outFile,"%s/p%6.6i.nc",outDir,t);
       printf("writing output: %s\n", outFile);
-      gridLoop3D(u){
-        double val=u.phi(0,j,k);
-        val=QuantumRange*clip(val,0,1);
-        img.pixelColor(j,k,Color(val,val,val,0));
-      }
-      img.write(outFile);
+      u.phi.writeToFileNc(outFile);
     }
 
     if (t<iterations){
